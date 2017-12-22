@@ -1,3 +1,5 @@
 *.exe
 *.htm
 *.pdb
+s_tray/Release/*
+s_tray/Debug/*
