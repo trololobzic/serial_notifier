@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "s_tray", "s_tray\s_tray.vcproj", "{308C4A9A-8193-48C4-AF6A-927BE4B86F5B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{308C4A9A-8193-48C4-AF6A-927BE4B86F5B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{308C4A9A-8193-48C4-AF6A-927BE4B86F5B}.Debug|Win32.Build.0 = Debug|Win32
+		{308C4A9A-8193-48C4-AF6A-927BE4B86F5B}.Release|Win32.ActiveCfg = Release|Win32
+		{308C4A9A-8193-48C4-AF6A-927BE4B86F5B}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
