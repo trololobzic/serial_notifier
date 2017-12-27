@@ -20,6 +20,8 @@
 #define REGKEY_AUTORUN _T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run")
 #define REGKEY_POPUP _T("SOFTWARE\\SerialMonitor")
 
+#define MESSAGEBOX_CAPTION _T("Serial Monitor")
+
 #define WM_MYICONNOTIFY					(WM_USER+1)
 #define WM_POPUP_AUTORUN				(WM_USER+2)
 #define WM_POPUP_POPUP_ENABLE			(WM_USER+3)

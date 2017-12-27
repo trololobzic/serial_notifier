@@ -173,7 +173,7 @@ LRESULT Cs_trayDlg::OnIcon(WPARAM wp, LPARAM lp)
 	char msg[512] = {0};
 	int cmdId = 0, portId = 0 ;
 	//_snprintf(msg, 512 , "%d", lp );
-	//AfxMessageBox(msg);
+	//MessageBox(msg);
 
 	switch(lp)
 	{
@@ -373,7 +373,7 @@ BOOL Cs_trayDlg::SetAutorunSetting(BOOL autorunEnable)
 	if( errorCode != ERROR_SUCCESS)
 	{
 		errorStr.Format(_T("RegOpenKeyEx() ошибка %d"), errorCode );
-		AfxMessageBox(errorStr, MB_ICONSTOP | MB_OK);
+		MessageBox(errorStr, MESSAGEBOX_CAPTION, MB_ICONSTOP | MB_OK);
 		return FALSE;
 	}
 	
@@ -390,7 +390,7 @@ BOOL Cs_trayDlg::SetAutorunSetting(BOOL autorunEnable)
 		if ( errorCode != ERROR_SUCCESS)
 		{
 			errorStr.Format(_T("RegSetValueEx() ошибка %d"), errorCode );
-			AfxMessageBox(errorStr, MB_ICONSTOP | MB_OK);
+			MessageBox(errorStr, MESSAGEBOX_CAPTION, MB_ICONSTOP | MB_OK);
 			res = FALSE ;
 		}
 	}
@@ -400,7 +400,7 @@ BOOL Cs_trayDlg::SetAutorunSetting(BOOL autorunEnable)
 		if ( errorCode != ERROR_SUCCESS )
 		{
 			errorStr.Format(_T("RegDeleteValue() ошибка %d"), errorCode );
-			AfxMessageBox(errorStr, MB_ICONSTOP | MB_OK);
+			MessageBox(errorStr, MESSAGEBOX_CAPTION, MB_ICONSTOP | MB_OK);
 			res = FALSE ;
 		}
 	}
@@ -409,7 +409,7 @@ BOOL Cs_trayDlg::SetAutorunSetting(BOOL autorunEnable)
 	if ( errorCode != ERROR_SUCCESS )
 	{
 		errorStr.Format(_T("RegCloseKey() ошибка %d"), errorCode );
-		AfxMessageBox(errorStr, MB_ICONSTOP | MB_OK);
+		MessageBox(errorStr, MESSAGEBOX_CAPTION, MB_ICONSTOP | MB_OK);
 		res = FALSE ;
 	}
 	return res;
@@ -455,7 +455,7 @@ BOOL Cs_trayDlg::GetPopupSetting()
 				default:
 					{
 						errorStr.Format(_T("RegOpenKeyEx() ошибка %d"), errorCode );
-						AfxMessageBox(errorStr, MB_ICONSTOP | MB_OK);
+						MessageBox(errorStr, MESSAGEBOX_CAPTION, MB_ICONSTOP | MB_OK);
 						gpssState = GPSS_Finish;
 					}
 					break;
@@ -472,7 +472,7 @@ BOOL Cs_trayDlg::GetPopupSetting()
 				else
 				{
 					errorStr.Format(_T("RegOpenKeyEx() ошибка %d"), errorCode );
-					AfxMessageBox(errorStr, MB_ICONSTOP | MB_OK);
+					MessageBox(errorStr, MESSAGEBOX_CAPTION, MB_ICONSTOP | MB_OK);
 					gpssState = GPSS_Finish;
 				}
 
@@ -498,7 +498,7 @@ BOOL Cs_trayDlg::GetPopupSetting()
 				else
 				{
 					errorStr.Format(_T("RegSetValueEx() ошибка %d"), errorCode );
-					AfxMessageBox(errorStr, MB_ICONSTOP | MB_OK);
+					MessageBox(errorStr, MESSAGEBOX_CAPTION, MB_ICONSTOP | MB_OK);
 					res = FALSE ;
 				}
 
@@ -549,7 +549,7 @@ BOOL Cs_trayDlg::SetPopupSetting(BOOL enablePopup)
 	if (errorCode != ERROR_SUCCESS)
 	{
 		errorStr.Format(_T("RegOpenKeyEx() ошибка %d"), errorCode );
-		AfxMessageBox(errorStr, MB_ICONSTOP | MB_OK);
+		MessageBox(errorStr, MESSAGEBOX_CAPTION, MB_ICONSTOP | MB_OK);
 		res = FALSE ;
 		return res;
 	}
@@ -558,7 +558,7 @@ BOOL Cs_trayDlg::SetPopupSetting(BOOL enablePopup)
 	if (errorCode != ERROR_SUCCESS)
 	{
 		errorStr.Format(_T("RegSetValueEx() ошибка %d"), errorCode );
-		AfxMessageBox(errorStr, MB_ICONSTOP | MB_OK);		
+		MessageBox(errorStr, MESSAGEBOX_CAPTION, MB_ICONSTOP | MB_OK);		
 		res = FALSE ;
 	}
 
@@ -668,19 +668,19 @@ BOOL Cs_trayDlg::CheckSystemPopupEnable(BOOL offerToFix)
 
 		case CSPES_TryToFix:
 			{
-				if ( AfxMessageBox( message, MB_OKCANCEL | MB_ICONQUESTION ) == IDOK )
+				if ( MessageBox( message, MESSAGEBOX_CAPTION, MB_OKCANCEL | MB_ICONQUESTION ) == IDOK )
 				{
 					//fix value
 					errorCode = ::RegSetValueEx(hKey, value, 0, REG_DWORD, (LPBYTE)&dwExpectedValue, sizeof(DWORD));
 
 					if ( errorCode == ERROR_SUCCESS )
 					{
-						AfxMessageBox(_T("Изменения вступят в силу после перезагрузки."), MB_OK | MB_ICONINFORMATION);
+						MessageBox(_T("Изменения вступят в силу после перезагрузки."), MESSAGEBOX_CAPTION, MB_OK | MB_ICONINFORMATION);
 					}
 					else
 					{
-						message.Format(_T("RegSetValueEx ошибка %d", errorCode));
-						AfxMessageBox( message, MB_OK | MB_ICONERROR );
+						message.Format(_T("RegSetValueEx ошибка %d"), errorCode);
+						MessageBox( message, MESSAGEBOX_CAPTION, MB_OK | MB_ICONERROR );
 					}
 				}
 
