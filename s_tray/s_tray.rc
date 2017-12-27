@@ -92,7 +92,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 IDD_S_TRAY_DIALOG DIALOGEX 0, 0, 320, 200
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION
 EXSTYLE WS_EX_APPWINDOW
-CAPTION "s_tray"
+CAPTION "Serial Monitor"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,263,179,50,14
@@ -123,7 +123,7 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Nizhniy Novgorod. 2017"
             VALUE "FileDescription", "Serial Monitor"
-            VALUE "FileVersion", "1.0.0.1"
+            VALUE "FileVersion", "1.0.0.2"
             VALUE "InternalName", "s_tray.exe"
             VALUE "OriginalFilename", "s_tray.exe"
             VALUE "ProductName", "TODO: <Product name>"

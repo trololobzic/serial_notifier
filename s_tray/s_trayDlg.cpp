@@ -32,13 +32,10 @@ void Cs_trayDlg::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(Cs_trayDlg, CDialog)
 	ON_WM_PAINT()
-	ON_WM_QUERYDRAGICON()
-	//}}AFX_MSG_MAP
-	//ON_BN_CLICKED(IDC_BUTTON1, &Cs_trayDlg::OnBnClickedButton1)
-	//ON_BN_CLICKED(IDC_BUTTON2, &Cs_trayDlg::OnBnClickedButton2)
+	ON_WM_QUERYDRAGICON()	
 	ON_MESSAGE(WM_MYICONNOTIFY,OnIcon)
-	ON_COMMAND(WM_POPUP_EXIT, &Cs_trayDlg::OnPopupExit)
-	ON_COMMAND(WM_POPUP_AUTORUN, &Cs_trayDlg::OnPopupAutorun)
+	//ON_COMMAND(WM_POPUP_EXIT, &Cs_trayDlg::OnPopupExit)
+	//ON_COMMAND(WM_POPUP_AUTORUN, &Cs_trayDlg::OnPopupAutorun)
 END_MESSAGE_MAP()
 
 
@@ -57,17 +54,26 @@ BOOL Cs_trayDlg::OnInitDialog()
 	
 	this->trayIconWndId = m_hWnd;
 	this->TrayIcon_Start(_T("Serial Monitor"));
-
-	this->GetSerialList(this->serialList);
-	std::sort(this->serialList.rbegin(), this->serialList.rend());
-
-	this->menu.CreatePopupMenu();
+	
+	this->menu.CreatePopupMenu();	
+	this->menu.AppendMenu(MF_SEPARATOR, WM_POPUP_SEPARATOR, _T(""));
+	this->menu.AppendMenu(MF_STRING, WM_POPUP_POPUP_ENABLE, _T("Вплывающие сообщения"));
 	this->menu.AppendMenu(MF_STRING, WM_POPUP_AUTORUN, _T("Автозапуск"));
 	this->menu.AppendMenu(MF_SEPARATOR, WM_POPUP_SEPARATOR, _T(""));
 	this->menu.AppendMenu(MF_STRING, WM_POPUP_EXIT, _T("Выход"));
 	
 	if ( this->GetAutorunSetting() )
 		this->menu.CheckMenuItem(WM_POPUP_AUTORUN, MF_CHECKED);
+
+	this->popupEnable = FALSE;
+	if ( this->GetPopupSetting() )
+	{
+		this->menu.CheckMenuItem(WM_POPUP_POPUP_ENABLE, MF_CHECKED);
+		this->popupEnable = TRUE;
+	}
+
+	this->GetSerialList(this->serialList);
+	std::sort(this->serialList.rbegin(), this->serialList.rend());
 
 	AfxBeginThread(DoWaitNotificationThread, this );	
 
@@ -145,11 +151,14 @@ void Cs_trayDlg::TrayIcon_Stop()
 }
 void Cs_trayDlg::TrayIcon_Ballon(const char * message, char * title, DWORD infoFlag = NIIF_NONE)
 {
+	UINT uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP ;
+	if (this->popupEnable)
+		uFlags |= NIF_INFO /*| NIF_REALTIME*/;	
 	NOTIFYICONDATA nf = {0};
 	nf.cbSize = NOTIFYICONDATA_V3_SIZE ;
 	nf.hWnd = trayIconWndId;
 	nf.hIcon=m_hIcon;	
-	nf.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP | NIF_INFO /*| NIF_REALTIME*/;	
+	nf.uFlags = uFlags;
 	nf.uCallbackMessage = WM_MYICONNOTIFY;
     nf.dwInfoFlags = infoFlag;    
     nf.uTimeout = 12000;
@@ -209,7 +218,7 @@ LRESULT Cs_trayDlg::OnIcon(WPARAM wp, LPARAM lp)
 			menu.InsertMenu(0, MF_POPUP|MF_STRING| MF_BYPOSITION, (UINT)submenu.m_hMenu,  _T("Устройства"));
 			
 			SetForegroundWindow();
-			cmdId = menu.TrackPopupMenu(TPM_RIGHTALIGN | TPM_RETURNCMD, cp.x, cp.y, this); 
+			cmdId = menu.TrackPopupMenu(TPM_RIGHTALIGN |TPM_RETURNCMD, cp.x, cp.y, this); 
 			
 
 			submenu.DestroyMenu();
@@ -224,6 +233,11 @@ LRESULT Cs_trayDlg::OnIcon(WPARAM wp, LPARAM lp)
 			case WM_POPUP_AUTORUN:
 				this->OnPopupAutorun();
 				break;
+
+			case WM_POPUP_POPUP_ENABLE:
+				this->OnPopupEnablePopup();
+				break;
+
 
 			case WM_POPUP_EXIT:
 				this->OnPopupExit();
@@ -297,12 +311,31 @@ void Cs_trayDlg::OnPopupAutorun()
 			menu.CheckMenuItem(WM_POPUP_AUTORUN, checkBoxChecked );
 }
 
+void Cs_trayDlg::OnPopupEnablePopup()
+{	
+	BOOL popupEnable = TRUE;
+	UINT checkBoxChecked = MF_CHECKED;
+	UINT flags = menu.GetMenuState(WM_POPUP_POPUP_ENABLE, MF_BYCOMMAND);
+
+
+	if (flags & MF_CHECKED)
+	{
+		popupEnable = FALSE;
+		checkBoxChecked = MF_UNCHECKED ;
+	}	
+	
+	if ( SetPopupSetting(popupEnable) )
+	{
+			menu.CheckMenuItem(WM_POPUP_POPUP_ENABLE, checkBoxChecked );
+			this->popupEnable = popupEnable;
+	}
+}
+
 BOOL Cs_trayDlg::GetAutorunSetting()
 {
 	BOOL res = FALSE;
 	HKEY hKey;	
-	if( ::RegOpenKeyEx( HKEY_CURRENT_USER, _T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run"),0, 
-		KEY_QUERY_VALUE, &hKey) == ERROR_SUCCESS)
+	if( ::RegOpenKeyEx( HKEY_CURRENT_USER, REGKEY_AUTORUN, 0, KEY_QUERY_VALUE, &hKey) == ERROR_SUCCESS)
 	{
 		TCHAR szData[256];
 		DWORD dwKeyDataType;
@@ -335,9 +368,7 @@ BOOL Cs_trayDlg::SetAutorunSetting(BOOL autorunEnable)
 	LSTATUS errorCode = ERROR_SUCCESS ;
 	CString errorStr = _T("");
 
-	errorCode = ::RegOpenKeyEx( HKEY_CURRENT_USER, 
-		_T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run"),0, 
-		KEY_WRITE, &hKey);
+	errorCode = ::RegOpenKeyEx( HKEY_CURRENT_USER, REGKEY_AUTORUN, 0, KEY_WRITE, &hKey);
 
 	if( errorCode != ERROR_SUCCESS)
 	{
@@ -382,6 +413,304 @@ BOOL Cs_trayDlg::SetAutorunSetting(BOOL autorunEnable)
 		res = FALSE ;
 	}
 	return res;
+}
+
+BOOL Cs_trayDlg::GetPopupSetting()
+{	
+	DWORD dwKeyDataType;
+	BOOL res = FALSE;
+	HKEY hKey;
+	int errorCode;
+	CString errorStr = _T("");
+
+
+	enum gettingPopupSettingsState
+	{
+		GPSS_OpenKey,		
+		GPSS_CreateKey,
+		GPSS_SetValue,
+		GPSS_GetValue,
+		GPSS_Finish
+	};
+
+	BOOL systemPopupEnable = this->CheckSystemPopupEnable(FALSE);
+
+	gettingPopupSettingsState gpssState = GPSS_OpenKey;
+	while( gpssState != GPSS_Finish )
+	{
+		switch( gpssState )
+		{
+		case GPSS_OpenKey:
+			{
+				errorCode = ::RegOpenKeyEx( HKEY_CURRENT_USER, REGKEY_POPUP,0, KEY_QUERY_VALUE, &hKey);
+				switch(errorCode)
+				{
+				case ERROR_SUCCESS:
+					gpssState = GPSS_GetValue;
+					break;
+				case ERROR_FILE_NOT_FOUND:
+					//create key
+					gpssState = GPSS_CreateKey;
+					break;
+				default:
+					{
+						errorStr.Format(_T("RegOpenKeyEx() ошибка %d"), errorCode );
+						AfxMessageBox(errorStr, MB_ICONSTOP | MB_OK);
+						gpssState = GPSS_Finish;
+					}
+					break;
+				}
+			}
+			break;
+
+
+		case GPSS_CreateKey:
+			{
+				errorCode = ::RegCreateKey(HKEY_CURRENT_USER, REGKEY_POPUP, &hKey);
+				if (errorCode == ERROR_SUCCESS)
+					gpssState = GPSS_SetValue;
+				else
+				{
+					errorStr.Format(_T("RegOpenKeyEx() ошибка %d"), errorCode );
+					AfxMessageBox(errorStr, MB_ICONSTOP | MB_OK);
+					gpssState = GPSS_Finish;
+				}
+
+				
+			}
+			break;
+
+		case GPSS_SetValue:
+			{
+				DWORD value = 0;
+				if ( systemPopupEnable )
+				{
+					value = 1 ;
+					res = TRUE ;
+				}
+
+				errorCode = ::RegSetValueEx(hKey, REG_POPUP_ID, 0, REG_DWORD, (LPBYTE)&value, sizeof(DWORD));
+				if ( errorCode == ERROR_SUCCESS)
+				{
+					::RegCloseKey( hKey );
+					gpssState = GPSS_Finish;
+				}
+				else
+				{
+					errorStr.Format(_T("RegSetValueEx() ошибка %d"), errorCode );
+					AfxMessageBox(errorStr, MB_ICONSTOP | MB_OK);
+					res = FALSE ;
+				}
+
+			}
+			break;
+
+		case GPSS_GetValue:
+			{				
+				DWORD dwValue;
+				DWORD dwBufSize = sizeof(DWORD);
+
+				gpssState = GPSS_Finish;
+
+				errorCode = ::RegQueryValueEx(hKey, REG_POPUP_ID, NULL, &dwKeyDataType, (LPBYTE) &dwValue, &dwBufSize);
+				if ((errorCode == ERROR_SUCCESS) && (dwKeyDataType == REG_DWORD))
+				{
+					if (dwValue)
+						res = TRUE;					
+				}
+				::RegCloseKey( hKey );
+			}
+			break;
+
+		default:
+			gpssState = GPSS_Finish;
+			break;
+		}
+	}
+
+	return res;
+}
+
+BOOL Cs_trayDlg::SetPopupSetting(BOOL enablePopup)
+{
+	DWORD dwValue = 0;
+	BOOL res = TRUE;
+	HKEY hKey;
+	int errorCode;
+	CString errorStr = _T("");
+
+	if (enablePopup)
+	{
+		this->CheckSystemPopupEnable(TRUE);
+		dwValue = 1 ;
+	}
+
+	errorCode = ::RegOpenKeyEx( HKEY_CURRENT_USER, REGKEY_POPUP,0, KEY_WRITE, &hKey);
+	if (errorCode != ERROR_SUCCESS)
+	{
+		errorStr.Format(_T("RegOpenKeyEx() ошибка %d"), errorCode );
+		AfxMessageBox(errorStr, MB_ICONSTOP | MB_OK);
+		res = FALSE ;
+		return res;
+	}
+
+	errorCode = ::RegSetValueEx(hKey, REG_POPUP_ID, 0, REG_DWORD, (LPBYTE)&dwValue, sizeof(DWORD));
+	if (errorCode != ERROR_SUCCESS)
+	{
+		errorStr.Format(_T("RegSetValueEx() ошибка %d"), errorCode );
+		AfxMessageBox(errorStr, MB_ICONSTOP | MB_OK);		
+		res = FALSE ;
+	}
+
+	::RegCloseKey(hKey);
+	return res ;	
+}
+
+BOOL Cs_trayDlg::CheckSystemPopupEnable(BOOL offerToFix)
+{
+	enum CSPE_State
+	{
+		CSPES_ChoiseKey,
+		CSPES_OpenKey,
+		CSPES_GetValue,
+		CSPES_TryToFix,
+		CSPES_StepToNextChoice,
+		CSPES_Finish
+	};
+
+	HKEY hKey;
+	int errorCode;
+	int choice = 0 ;
+	CString key, value, message;
+	DWORD dwExpectedValue;
+	BOOL returnValue = TRUE ;
+
+	CSPE_State state = CSPES_ChoiseKey;
+	while(state != CSPES_Finish)
+	{
+		switch (state)
+		{
+		case CSPES_ChoiseKey:
+			{
+				state = CSPES_OpenKey;
+				switch (choice)
+				{
+				case 0:
+					dwExpectedValue = 1 ;
+					key.Format(_T("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced"));
+					value.Format(_T("EnableBallonTip"));
+					message.Format(_T("Всплывающие сообщения отключены в этой системе:\n\n")
+									_T("в разделе реестра\n")
+									_T("HCU\\%s\n")
+									_T("параметр %s не равен ожидаемому  %ld\n\n")
+									_T("Включить всплывающие сообщения?"), key, value, dwExpectedValue);
+					break;
+
+				case 1:
+					dwExpectedValue = 1 ;
+					key.Format(_T("Software\\Microsoft\\Windows\\CurrentVersion\\PushNotifications"));
+					value.Format(_T("ToastEnabled"));
+					message.Format(_T("Всплывающие сообщения отключены в этой системе:\n\n")
+									_T("в разделе реестра\n")
+									_T("HCU\\%s\n")
+									_T("параметр %s не равен ожидаемому  %ld\n\n")
+									_T("Включить всплывающие сообщения?"), key, value, dwExpectedValue);
+					break;
+
+				case 2:
+					key.Format(_T("Software\\Policies\\Microsoft\\Windows\\Explorer"));
+					value.Format(_T("DisableNotificationCenter"));
+					message.Format(_T("Отключен центр всплывающих сообщений:\n\n")
+									_T("в разделе реестра\n")
+									_T("HCU\\%s\n")
+									_T("параметр %s не равен ожидаемому  %ld\n\n")
+									_T("Включить центр всплывающих сообщений?"), key, value, dwExpectedValue);
+					dwExpectedValue = 0 ;
+					break;
+
+				default:
+					state = CSPES_Finish;
+					break;
+				}
+			}
+			break;
+
+		case CSPES_OpenKey:
+			{
+				state = CSPES_StepToNextChoice;
+				errorCode = ::RegOpenKeyEx( HKEY_CURRENT_USER, key, 0, KEY_ALL_ACCESS, &hKey);
+				if (errorCode == ERROR_SUCCESS)
+					state = CSPES_GetValue;
+			}
+			break;
+
+		case CSPES_GetValue:
+			{
+				DWORD dwValue;
+				DWORD dwKeyDataType;
+				DWORD dwBufSize = sizeof(DWORD);
+
+				state = CSPES_StepToNextChoice;
+
+				errorCode = ::RegQueryValueEx(hKey, value, NULL, &dwKeyDataType, (LPBYTE) &dwValue, &dwBufSize);
+				if ((errorCode == ERROR_SUCCESS) && (dwKeyDataType == REG_DWORD))
+				{
+					if (dwValue != dwExpectedValue)
+					{
+						returnValue = FALSE ;
+						if (offerToFix)
+							state = CSPES_TryToFix;
+					}
+				}
+				
+			}
+			break;
+
+		case CSPES_TryToFix:
+			{
+				if ( AfxMessageBox( message, MB_OKCANCEL | MB_ICONQUESTION ) == IDOK )
+				{
+					//fix value
+					errorCode = ::RegSetValueEx(hKey, value, 0, REG_DWORD, (LPBYTE)&dwExpectedValue, sizeof(DWORD));
+
+					if ( errorCode == ERROR_SUCCESS )
+					{
+						AfxMessageBox(_T("Изменения вступят в силу после перезагрузки."), MB_OK | MB_ICONINFORMATION);
+					}
+					else
+					{
+						message.Format(_T("RegSetValueEx ошибка %d", errorCode));
+						AfxMessageBox( message, MB_OK | MB_ICONERROR );
+					}
+				}
+
+				state = CSPES_StepToNextChoice;				
+			}
+			break;
+
+		case CSPES_StepToNextChoice:
+			{
+				::RegCloseKey(hKey);
+				choice++;
+				state = CSPES_ChoiseKey;
+			}
+			break;
+
+
+		case CSPES_Finish:
+			{				
+			}
+			break;
+
+		default:
+			{
+				state = CSPES_Finish;
+			}
+			break;
+		}
+	}
+
+	return returnValue ;
 }
 
 void Cs_trayDlg::GetSerialList(std::vector<SerialInfo> & serialList)
@@ -493,28 +822,6 @@ void Cs_trayDlg::GetSerialList(std::vector<SerialInfo> & serialList)
 				serialList.push_back(serialInfo);
 
 			}
-/*
-			cchValue = MAX_VALUE_NAME; 
-			achValue[0] = '\0'; 
-			retCode = RegEnumValue(hKey, i, 
-				achValue, 
-				&cchValue, 
-				NULL, 
-				NULL,
-				NULL,
-				NULL);
-
-			if (retCode == ERROR_SUCCESS ) 
-				{ 
-				
-				DWORD lpData = cbMaxValueData;
-				buffer[0] = '\0';
-				LONG dwRes = RegQueryValueEx(hKey, achValue, 0, NULL, buffer, &lpData);
-				_tprintf(TEXT("(%d) %s : %s\n"), i+1, achValue, buffer); 
-				} 
-			}
-		*/
-
 		}
 
 		GetSerialFriendlyName(serialList);
