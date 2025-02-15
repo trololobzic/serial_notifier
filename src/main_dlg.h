@@ -1,8 +1,8 @@
 ﻿#pragma once
 #include <windows.h>
-#include <initguid.h>
-#include <devguid.h>
-#include <setupapi.h>
+//#include <initguid.h>
+//#include <devguid.h>
+//#include <setupapi.h>
 #include <vector>
 #include <algorithm>
 #include <strsafe.h>

@@ -1,6 +1,7 @@
 ﻿#include "../src/stdafx.h"
 #include "../src/serial.h"
 
+
 #define CATCH_CONFIG_NO_CPP11
 #include "catch.hpp"
 
@@ -33,10 +34,7 @@ struct TestRegistrySerialList1
 
 TEST_CASE("Checking SerialDevice compare operators", "[serial]")
 {
-    serial_notifier::SerialDevice device1, device2;
-
-    device1.device_name = TEXT("COM1");
-    device2.device_name = TEXT("COM1");
+    serial_notifier::SerialDevice device1(TEXT("COM1")), device2(TEXT("COM1"));
 
     REQUIRE(device1 == device2);
     REQUIRE_FALSE(device1 != device2);
@@ -94,4 +92,17 @@ TEST_CASE("Checking read_serial_list()", "[serial]")
 
     REQUIRE(::lstrcmp(serial_list.at(4).device_name, TEXT("COM12")) == 0);
     REQUIRE(::lstrcmp(serial_list.at(4).friendly_name, TEXT("/dev/ttyS12")) == 0);
+}
+
+//Machine dependent test. Exclude this in release
+TEST_CASE("Checking setup_descriptions()", "[serial]")
+{
+    typedef serial_notifier::Serial<TestRegistrySerialList1> Serial;
+
+    Serial::SerialList serial_list;
+    serial_list.resize(1);
+    serial_list.at(0).friendly_name = TEXT("\\Device\\Serial0");
+
+    Serial::setup_descriptions(serial_list);
+    REQUIRE(serial_list.at(0).description == CString(TEXT("Последовательный порт")));
 }

@@ -1,5 +1,10 @@
 ﻿#pragma once
+#pragma comment (lib, "Setupapi.lib")
+
 #include <vector>
+#include <setupapi.h>
+#include <initguid.h>
+#include <devguid.h>
 #include "registry/registry.h"
 
 namespace serial_notifier
@@ -9,6 +14,29 @@ struct SerialDevice
 {
     CString device_name;
     CString friendly_name;
+    CString description;
+
+    SerialDevice()
+    {
+    }
+
+    SerialDevice(const CString & device_name) :
+        device_name(device_name)
+    {
+    }
+
+    SerialDevice(const CString & device_name, const CString & friendly_name) :
+        device_name(device_name),
+        friendly_name(friendly_name)
+    {
+    }
+
+    SerialDevice(const CString & device_name, const CString & friendly_name, const CString & description) :
+        device_name(device_name),
+        friendly_name(friendly_name),
+        description(description)
+    {
+    }
 
     bool operator==(const SerialDevice & other) const
     {
@@ -50,6 +78,8 @@ public:
         _serials_reg_section(HKEY_LOCAL_MACHINE),
         _serials_reg_path(TEXT("HARDWARE\\DEVICEMAP\\SERIALCOMM"))
     {
+        SerialList serial_list;
+        setup_descriptions(serial_list);
         //TODO
     }
 
@@ -73,6 +103,41 @@ public:
 
         std::sort(serial_list.begin(), serial_list.end());
         return serial_list;
+    }
+
+    inline static void setup_descriptions(SerialList & serial_list)
+    {
+        (void)serial_list;
+        _SP_DEVINFO_DATA dev_info_data = {};
+        dev_info_data.cbSize = sizeof(dev_info_data);
+
+        // get the tree containing the info for the ports
+        HDEVINFO h_device_info = ::SetupDiGetClassDevs(&GUID_DEVCLASS_PORTS, 0, NULL, DIGCF_PRESENT);
+        if (h_device_info == INVALID_HANDLE_VALUE)
+        {
+            return;
+        }
+
+        DWORD device_idx = 0;
+        while (::SetupDiEnumDeviceInfo(h_device_info, device_idx++, &dev_info_data))
+        {
+            DWORD reg_data_type;
+            const size_t property_buffer_size = 1024;
+		    TCHAR property_buffer[property_buffer_size] = {0};
+		    if ( SetupDiGetDeviceRegistryProperty(h_device_info, &dev_info_data, SPDRP_FRIENDLYNAME, &reg_data_type, (PBYTE)property_buffer, (property_buffer_size - 1) * sizeof(TCHAR), NULL) &&
+                ::_tcslen(property_buffer))
+            {
+                 SerialList::iterator serial_list_iterator = std::find(serial_list.begin(), serial_list.end(), SerialDevice(TEXT(""), property_buffer));
+                ::memset(property_buffer, 0 , property_buffer_size * sizeof(TCHAR));
+
+                if ( serial_list_iterator != serial_list.end() &&
+                    SetupDiGetDeviceRegistryProperty(h_device_info, &dev_info_data, SPDRP_DEVICEDESC, &reg_data_type, (PBYTE)property_buffer, (property_buffer_size - 1) * sizeof(TCHAR), NULL) &&
+                    ::_tcslen(property_buffer))
+                {
+                    serial_list_iterator->description = property_buffer;
+                }
+            }
+        }
     }
 
 private:
