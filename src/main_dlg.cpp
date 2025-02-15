@@ -1,7 +1,3 @@
-﻿
-// mfc1Dlg.cpp : implementation file
-//
-
 #include "stdafx.h"
 #include "main_app.h"
 #include "main_dlg.h"
