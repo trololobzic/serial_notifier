@@ -1,19 +1,19 @@
 ﻿cmake_minimum_required(VERSION 3.13)
 
 macro(set_warning_level flags_set level)
-	if("${${flags_set}}" MATCHES "/W[0-4]")
-		string(REGEX REPLACE "/W[0-4]" "${level}" ${flags_set} "${${flags_set}}")
-	else()
-		set(${flags_set} "${${flags_set}} ${level}")
-	endif()
+    if("${${flags_set}}" MATCHES "/W[0-4]")
+        string(REGEX REPLACE "/W[0-4]" "${level}" ${flags_set} "${${flags_set}}")
+    else()
+        set(${flags_set} "${${flags_set}} ${level}")
+    endif()
 endmacro()
 
 macro(set_optimization_level flags_set level)
-	if("${${flags_set}}" MATCHES "/O[0-4,x]")
-		string(REGEX REPLACE "/O[0-4,x]" "${level}" ${flags_set} "${${flags_set}}")
-	else()
-		set(${flags_set} "${${flags_set}} ${level}")
-	endif()
+    if("${${flags_set}}" MATCHES "/O[0-4,x]")
+        string(REGEX REPLACE "/O[0-4,x]" "${level}" ${flags_set} "${${flags_set}}")
+    else()
+        set(${flags_set} "${${flags_set}} ${level}")
+    endif()
 endmacro()
 
 macro(replace_flags var these those)
@@ -75,7 +75,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
 #install(TARGETS ${PROJECT_NAME} DESTINATION bin)
 
 
-  
+
 
 
 if("${CMAKE_MFC_FLAG}" STREQUAL "2")
