@@ -74,7 +74,7 @@ TEST_CASE("Checking SerialDevice _get_device_idx()", "[serial]")
 TEST_CASE("Checking read_serial_list()", "[serial]")
 {
     serial_notifier::Serial<TestRegistrySerialList1> serial;
-    serial_notifier::Serial<TestRegistrySerialList1>::SerialList serial_list = serial.read_serial_list();
+    serial_notifier::Serial<TestRegistrySerialList1>::SerialList serial_list = serial.get_list();
 
     REQUIRE(serial_list.size() == 5);
 
@@ -91,10 +91,9 @@ TEST_CASE("Checking read_serial_list()", "[serial]")
     REQUIRE(::lstrcmp(serial_list.at(3).friendly_name, TEXT("/dev/ttyS10")) == 0);
 
     REQUIRE(::lstrcmp(serial_list.at(4).device_name, TEXT("COM12")) == 0);
-    REQUIRE(::lstrcmp(serial_list.at(4).friendly_name, TEXT("/dev/ttyS12")) == 0);
+    REQUIRE(::lstrcmp(serial_list.at(4).friendly_name, TEXT("/dev/ttyS12")) == 0);   
 }
 
-//Machine dependent test. Exclude this in release
 TEST_CASE("Checking setup_descriptions()", "[serial]")
 {
     typedef serial_notifier::Serial<TestRegistrySerialList1> Serial;
@@ -104,10 +103,14 @@ TEST_CASE("Checking setup_descriptions()", "[serial]")
     serial_list.at(0).friendly_name = TEXT("\\Device\\Serial0");
 
     Serial::setup_descriptions(serial_list);
-    REQUIRE(serial_list.at(0).description == CString(TEXT("Последовательный порт")));
+
+    //Result of setup_descriptions() depends of local machine language settings.
+    //It can be "Serial port" or "Последовательный порт" for example.
+    //So this test case check only description is not empty.
+    CHECK(serial_list.at(0).description.GetLength());
 }
 
-TEST_CASE("Checking get_difference() - 1", "[serial]")
+TEST_CASE("Checking get_difference() - plugging devices", "[serial]")
 {
     typedef serial_notifier::Serial<TestRegistrySerialList1> Serial;
 
@@ -131,7 +134,7 @@ TEST_CASE("Checking get_difference() - 1", "[serial]")
     REQUIRE(diff.plugged_devices[0].device_name == CString(TEXT("COM20")));
 }
 
-TEST_CASE("Checking get_difference() - 2", "[serial]")
+TEST_CASE("Checking get_difference() - removing devices", "[serial]")
 {
     typedef serial_notifier::Serial<TestRegistrySerialList1> Serial;
 
@@ -155,7 +158,7 @@ TEST_CASE("Checking get_difference() - 2", "[serial]")
     REQUIRE(diff.unplugged_devices[0].device_name == CString(TEXT("COM20")));
 }
 
-TEST_CASE("Checking get_difference() - 3", "[serial]")
+TEST_CASE("Checking get_difference() - both plugging and unplugging devices", "[serial]")
 {
     typedef serial_notifier::Serial<TestRegistrySerialList1> Serial;
 

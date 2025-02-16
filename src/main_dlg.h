@@ -19,11 +19,10 @@
 
 #define ID_SYSTEMTRAY 0x1000
 
-//#define sizeofarr(__a__) sizeof(__a__)/sizeof(__a__[0])
 typedef serial_notifier::Settings<serial_notifier::Registry> Settings;
 typedef serial_notifier::Serial<serial_notifier::Registry> Serial;
 
-// Cmfc1Dlg dialog
+// CSerialNotifierDlg dialog
 class CSerialNotifierDlg : public CDialog
 {
 // Construction
@@ -34,11 +33,6 @@ public:
 // Dialog Data
     enum { IDD = IDD_DIALOG };
 
-    protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-
-    //static const int WM_MYICONNOTIFY = WM_USER + 1;
-
 // Implementation
 protected:
     HICON          _h_icon;
@@ -47,13 +41,8 @@ protected:
     Settings&      _settings;
     Serial&        _serial;
 
-    // Generated message map functions
-    virtual BOOL OnInitDialog();
-    afx_msg void OnDestroy();
-    afx_msg void OnPaint();
-    //afx_msg HCURSOR OnQueryDragIcon();
-
-
+protected:
+    // Tray icon handle methods
     BOOL CreateTrayIcon();
     BOOL SetTrayIconTipText(LPCTSTR pszText);
     BOOL ShowTrayIconBalloon(LPCTSTR pszTitle, LPCTSTR pszText, UINT unTimeout, DWORD dwInfoFlags);
@@ -65,6 +54,12 @@ protected:
     LRESULT OnTrayIconEvent(WPARAM wp, LPARAM lp);
 
 
-
+protected:
+    // Generated message map functions
+    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support    
+    virtual BOOL OnInitDialog();
+    //afx_msg HCURSOR OnQueryDragIcon();
+    afx_msg void OnDestroy();
+    afx_msg void OnPaint();
     DECLARE_MESSAGE_MAP()
 };

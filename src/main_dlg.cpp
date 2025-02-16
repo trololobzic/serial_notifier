@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "main_app.h"
 #include "main_dlg.h"
 #include "registry/registry.h"
@@ -52,28 +52,6 @@ BOOL CSerialNotifierDlg::OnInitDialog()
     CreateTrayIcon();
     SetTrayIconTipText(TEXT("Serial monitor"));
 
-    //int a = serial_notifier::Registry::get_key_value<UINT32>(HKEY_LOCAL_MACHINE, TEXT("HARDWARE\\DEVICEMAP\\VIDEO"), TEXT("MaxObjectNumber"));
-
-    //CString b = serial_notifier::Registry::get_key_value<CString>(HKEY_LOCAL_MACHINE, TEXT("HARDWARE\\DEVICEMAP\\SERIALCOMM"), TEXT("\\Device\\Serial0"));
-
-    //serial_notifier::RegistryValue a;
-    //serial_notifier::Registry::get_key_value(HKEY_CURRENT_USER, TEXT("Software\\serial_notifier"), TEXT("multi_key"), a);
-    //serial_notifier::Registry::is_key_present(HKEY_LOCAL_MACHINE, TEXT("SOFTWARE\\Microsoft\\Windows\\CurrentVersion"), TEXT("Abracadabra"));
-    /*
-    std::vector<CString> vec;
-    CString str;
-    str.Format(TEXT("string1"));
-    vec.push_back(str);
-
-    str.Format(TEXT("string2"));
-
-    vec.push_back(str);
-
-    serial_notifier::RegistryValue a(vec);
-    */
-
-    //serial_notifier::Registry::EntriesSet ress;
-    //serial_notifier::Registry::get_key_value(HKEY_CURRENT_USER, TEXT("Software\\serial_notifier"), ress);
     MessageBox(TEXT("qwerty мама мыла раму"), TEXT("123"), MB_OK | MB_ICONINFORMATION);
 
     CreateMenu();
@@ -204,11 +182,11 @@ BOOL CSerialNotifierDlg::CreateMenu()
 {
     _menu.CreatePopupMenu();
 
-    _menu.AppendMenu(MF_SEPARATOR, WM_POPUP_SEPARATOR, _T(""));
-    _menu.AppendMenu(MF_STRING, WM_POPUP_POPUP_ENABLE, _T("Р’РїР»С‹РІР°СЋС‰РёРµ СЃРѕРѕР±С‰РµРЅРёСЏ"));
-    _menu.AppendMenu(MF_STRING, WM_POPUP_AUTORUN, _T("РђРІС‚РѕР·Р°РїСѓСЃРє"));
-    _menu.AppendMenu(MF_SEPARATOR, WM_POPUP_SEPARATOR, _T(""));
-    _menu.AppendMenu(MF_STRING, WM_POPUP_EXIT, _T("Р’С‹С…РѕРґ"));
+    _menu.AppendMenu(MF_SEPARATOR, WM_POPUP_SEPARATOR, TEXT(""));
+    _menu.AppendMenu(MF_STRING, WM_POPUP_POPUP_ENABLE, _T("Popup"));
+    _menu.AppendMenu(MF_STRING, WM_POPUP_AUTORUN, TEXT("Autorun"));
+    _menu.AppendMenu(MF_SEPARATOR, WM_POPUP_SEPARATOR, TEXT(""));
+    _menu.AppendMenu(MF_STRING, WM_POPUP_EXIT, TEXT("Exit"));
     /*
     if ( this->GetAutorunSetting() )
         this->menu.CheckMenuItem(WM_POPUP_AUTORUN, MF_CHECKED);
