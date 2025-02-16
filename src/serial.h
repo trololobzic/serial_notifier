@@ -2,6 +2,7 @@
 #pragma comment (lib, "Setupapi.lib")
 
 #include <vector>
+#include <algorithm>
 #include <setupapi.h>
 #include <initguid.h>
 #include <devguid.h>
@@ -73,6 +74,11 @@ class Serial
 public:
     typedef std::vector<SerialDevice> SerialList;
 
+    struct SerialListDiff
+    {
+        SerialList plugged_devices;
+        SerialList unplugged_devices;
+    };
 
     Serial() :
         _serials_reg_section(HKEY_LOCAL_MACHINE),
@@ -138,6 +144,12 @@ public:
                 }
             }
         }
+    }
+
+    inline static void get_difference(const SerialList & old_list, const SerialList & new_list, SerialListDiff & diff)
+    {
+        std::set_difference(old_list.begin(), old_list.end(), new_list.begin(), new_list.end(), std::back_inserter(diff.unplugged_devices));
+        std::set_difference(new_list.begin(), new_list.end(), old_list.begin(), old_list.end(), std::back_inserter(diff.plugged_devices));
     }
 
 private:

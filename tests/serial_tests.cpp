@@ -106,3 +106,81 @@ TEST_CASE("Checking setup_descriptions()", "[serial]")
     Serial::setup_descriptions(serial_list);
     REQUIRE(serial_list.at(0).description == CString(TEXT("Последовательный порт")));
 }
+
+TEST_CASE("Checking get_difference() - 1", "[serial]")
+{
+    typedef serial_notifier::Serial<TestRegistrySerialList1> Serial;
+
+    Serial::SerialList old_list, new_list;
+    old_list.resize(2);
+    new_list.resize(3);
+
+    old_list[0].device_name = TEXT("COM9");
+    old_list[1].device_name = TEXT("COM10");
+
+    new_list[0].device_name = TEXT("COM9");
+    new_list[1].device_name = TEXT("COM10");
+    new_list[2].device_name = TEXT("COM20");
+
+    Serial::SerialListDiff diff;
+    Serial::get_difference(old_list, new_list, diff);
+
+    REQUIRE(diff.plugged_devices.size() == 1);
+    REQUIRE(diff.unplugged_devices.size() == 0);
+
+    REQUIRE(diff.plugged_devices[0].device_name == CString(TEXT("COM20")));
+}
+
+TEST_CASE("Checking get_difference() - 2", "[serial]")
+{
+    typedef serial_notifier::Serial<TestRegistrySerialList1> Serial;
+
+    Serial::SerialList old_list, new_list;
+    old_list.resize(3);
+    new_list.resize(2);
+
+    old_list[0].device_name = TEXT("COM9");
+    old_list[1].device_name = TEXT("COM10");
+    old_list[2].device_name = TEXT("COM20");
+
+    new_list[0].device_name = TEXT("COM9");
+    new_list[1].device_name = TEXT("COM10");
+
+    Serial::SerialListDiff diff;
+    Serial::get_difference(old_list, new_list, diff);
+
+    REQUIRE(diff.plugged_devices.size() == 0);
+    REQUIRE(diff.unplugged_devices.size() == 1);
+
+    REQUIRE(diff.unplugged_devices[0].device_name == CString(TEXT("COM20")));
+}
+
+TEST_CASE("Checking get_difference() - 3", "[serial]")
+{
+    typedef serial_notifier::Serial<TestRegistrySerialList1> Serial;
+
+    Serial::SerialList old_list, new_list;
+    old_list.resize(4);
+    new_list.resize(4);
+
+    old_list[0].device_name = TEXT("COM9");
+    old_list[1].device_name = TEXT("COM10");
+    old_list[2].device_name = TEXT("COM20");
+    old_list[3].device_name = TEXT("COM21");
+
+    new_list[0].device_name = TEXT("COM9");
+    new_list[1].device_name = TEXT("COM10");
+    new_list[2].device_name = TEXT("COM18");
+    new_list[3].device_name = TEXT("COM19");
+
+    Serial::SerialListDiff diff;
+    Serial::get_difference(old_list, new_list, diff);
+
+    REQUIRE(diff.plugged_devices.size() == 2);
+    REQUIRE(diff.unplugged_devices.size() == 2);
+
+    REQUIRE(diff.unplugged_devices[0].device_name == CString(TEXT("COM20")));
+    REQUIRE(diff.unplugged_devices[1].device_name == CString(TEXT("COM21")));
+    REQUIRE(diff.plugged_devices[0].device_name == CString(TEXT("COM18")));
+    REQUIRE(diff.plugged_devices[1].device_name == CString(TEXT("COM19")));
+}
