@@ -129,15 +129,15 @@ public:
         {
             DWORD reg_data_type;
             const size_t property_buffer_size = 1024;
-		    TCHAR property_buffer[property_buffer_size] = {0};
-		    if ( SetupDiGetDeviceRegistryProperty(h_device_info, &dev_info_data, SPDRP_FRIENDLYNAME, &reg_data_type, (PBYTE)property_buffer, (property_buffer_size - 1) * sizeof(TCHAR), NULL) &&
+            TCHAR property_buffer[property_buffer_size] = {0};
+            if (::SetupDiGetDeviceRegistryProperty(h_device_info, &dev_info_data, SPDRP_FRIENDLYNAME, &reg_data_type, (PBYTE)property_buffer, (property_buffer_size - 1) * sizeof(TCHAR), NULL) &&
                 ::_tcslen(property_buffer))
             {
                  SerialList::iterator serial_list_iterator = std::find(serial_list.begin(), serial_list.end(), SerialDevice(TEXT(""), property_buffer));
                 ::memset(property_buffer, 0 , property_buffer_size * sizeof(TCHAR));
 
-                if ( serial_list_iterator != serial_list.end() &&
-                    SetupDiGetDeviceRegistryProperty(h_device_info, &dev_info_data, SPDRP_DEVICEDESC, &reg_data_type, (PBYTE)property_buffer, (property_buffer_size - 1) * sizeof(TCHAR), NULL) &&
+                if (serial_list_iterator != serial_list.end() &&
+                    ::SetupDiGetDeviceRegistryProperty(h_device_info, &dev_info_data, SPDRP_DEVICEDESC, &reg_data_type, (PBYTE)property_buffer, (property_buffer_size - 1) * sizeof(TCHAR), NULL) &&
                     ::_tcslen(property_buffer))
                 {
                     serial_list_iterator->description = property_buffer;
