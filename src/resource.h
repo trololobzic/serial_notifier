@@ -17,3 +17,5 @@
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
+
+#define IDD_SYSTEMTRAY                  0x1000

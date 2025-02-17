@@ -91,7 +91,7 @@ TEST_CASE("Checking read_serial_list()", "[serial]")
     REQUIRE(::lstrcmp(serial_list.at(3).friendly_name, TEXT("/dev/ttyS10")) == 0);
 
     REQUIRE(::lstrcmp(serial_list.at(4).device_name, TEXT("COM12")) == 0);
-    REQUIRE(::lstrcmp(serial_list.at(4).friendly_name, TEXT("/dev/ttyS12")) == 0);   
+    REQUIRE(::lstrcmp(serial_list.at(4).friendly_name, TEXT("/dev/ttyS12")) == 0);
 }
 
 TEST_CASE("Checking setup_descriptions()", "[serial]")
@@ -100,6 +100,7 @@ TEST_CASE("Checking setup_descriptions()", "[serial]")
 
     Serial::SerialList serial_list;
     serial_list.resize(1);
+    serial_list.at(0).device_name = TEXT("COM4");
     serial_list.at(0).friendly_name = TEXT("\\Device\\Serial0");
 
     Serial::setup_descriptions(serial_list);

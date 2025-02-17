@@ -7,7 +7,6 @@
 #define new DEBUG_NEW
 #endif
 
-
 CSerialNotifierDlg::CSerialNotifierDlg(Settings & settings, Serial & serial, CWnd* pParent):
     _settings(settings),
     _serial(serial),
@@ -29,6 +28,8 @@ BEGIN_MESSAGE_MAP(CSerialNotifierDlg, CDialog)
     ON_WM_PAINT()
     ON_WM_DESTROY()
     ON_MESSAGE(WM_TRAYICON_EVENT, OnTrayIconEvent)
+    ON_MESSAGE(WM_SERIAL_LIST_WAS_CHANGED, OnChangedSerialList)
+
     //ON_WM_QUERYDRAGICON()
     //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
@@ -52,9 +53,14 @@ BOOL CSerialNotifierDlg::OnInitDialog()
     CreateTrayIcon();
     SetTrayIconTipText(TEXT("Serial monitor"));
 
-    MessageBox(TEXT("qwerty мама мыла раму"), TEXT("123"), MB_OK | MB_ICONINFORMATION);
+    //MessageBox(TEXT("qwerty мама мыла раму"), TEXT("123"), MB_OK | MB_ICONINFORMATION);
 
-    CreateMenu();
+    PrepareMenu();
+
+    //UINT tread_id = ::GetCurrentThreadId();
+
+    ;
+    AfxBeginThread(SerialListChangingMonitor, this->m_hWnd );
     return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
@@ -64,6 +70,7 @@ BOOL CSerialNotifierDlg::OnInitDialog()
 
 void CSerialNotifierDlg::OnPaint()
 {
+    //ShowWindow(SW_HIDE);
     if (IsIconic())
     {
         CPaintDC dc(this); // device context for painting
@@ -105,7 +112,7 @@ BOOL CSerialNotifierDlg::CreateTrayIcon()
     _notify_icon_data.cbSize = sizeof(_notify_icon_data);
 
     // set tray icon ID
-    _notify_icon_data.uID = ID_SYSTEMTRAY;
+    _notify_icon_data.uID = IDD_SYSTEMTRAY;
 
     // set handle to the window that receives tray icon notifications
     ASSERT(::IsWindow(GetSafeHwnd()));
@@ -178,28 +185,47 @@ BOOL CSerialNotifierDlg::SetTrayIcon(WORD wIconID)
     return SetTrayIcon(hIcon);
 }
 
-BOOL CSerialNotifierDlg::CreateMenu()
+VOID CSerialNotifierDlg::PrepareMenu()
 {
     _menu.CreatePopupMenu();
 
-    _menu.AppendMenu(MF_SEPARATOR, WM_POPUP_SEPARATOR, TEXT(""));
-    _menu.AppendMenu(MF_STRING, WM_POPUP_POPUP_ENABLE, _T("Popup"));
-    _menu.AppendMenu(MF_STRING, WM_POPUP_AUTORUN, TEXT("Autorun"));
-    _menu.AppendMenu(MF_SEPARATOR, WM_POPUP_SEPARATOR, TEXT(""));
-    _menu.AppendMenu(MF_STRING, WM_POPUP_EXIT, TEXT("Exit"));
-    /*
-    if ( this->GetAutorunSetting() )
-        this->menu.CheckMenuItem(WM_POPUP_AUTORUN, MF_CHECKED);
+    _menu.AppendMenu(MF_SEPARATOR,  WM_POPUP_SEPARATOR,     TEXT(""));
+    _menu.AppendMenu(MF_STRING,     WM_POPUP_POPUP_ENABLE,  TEXT("Popup"));
+    _menu.AppendMenu(MF_STRING,     WM_POPUP_AUTORUN,       TEXT("Autorun"));
+    _menu.AppendMenu(MF_SEPARATOR,  WM_POPUP_SEPARATOR,     TEXT(""));
+    _menu.AppendMenu(MF_STRING,     WM_POPUP_EXIT,          TEXT("Exit"));
 
-    this->popupEnable = FALSE;
-    if ( this->GetPopupSetting() )
+    _menu.CheckMenuItem(WM_POPUP_POPUP_ENABLE, _settings.popup() ? MF_CHECKED : MF_UNCHECKED);
+    _menu.CheckMenuItem(WM_POPUP_AUTORUN,      _settings.autorun() ? MF_CHECKED : MF_UNCHECKED);
+}
+
+void CSerialNotifierDlg::CreateDevicesSubMenu()
+{
+    _devices_submenu.CreatePopupMenu();
+
+    _serial.refresh_serial_list();
+    Serial::SerialList serial_list = _serial.get_list();
+
+    for(Serial::SerialList::iterator it = serial_list.begin(); it != serial_list.end(); it++)
     {
-        this->menu.CheckMenuItem(WM_POPUP_POPUP_ENABLE, MF_CHECKED);
-        this->popupEnable = TRUE;
+        CString next_item_string;
+        next_item_string.Format(TEXT("%-7s  "), it->device_name);
+        next_item_string += it->description.GetLength() ? it->description : CString(TEXT("\"")) + it->friendly_name + CString(TEXT("\""));
+        _devices_submenu.AppendMenu(MF_STRING , WM_POPUP_SERIAL_LIST + std::distance(serial_list.begin(), it), next_item_string.GetString());
     }
-    */
 
-    return TRUE;
+    if (serial_list.empty())
+    {
+        _devices_submenu.AppendMenu(MF_STRING | MF_GRAYED, WM_POPUP_SERIAL_LIST , TEXT("(none)"));
+    }
+
+    _menu.InsertMenu(0, MF_POPUP | MF_STRING| MF_BYPOSITION, (UINT)_devices_submenu.m_hMenu,  TEXT("Devices"));
+}
+
+void CSerialNotifierDlg::DestroyDevicesSubMenu()
+{
+    _devices_submenu.DestroyMenu();
+	_menu.DeleteMenu(0, MF_BYPOSITION);
 }
 
 LRESULT CSerialNotifierDlg::OnTrayIconEvent(WPARAM wp, LPARAM lp)
@@ -208,16 +234,51 @@ LRESULT CSerialNotifierDlg::OnTrayIconEvent(WPARAM wp, LPARAM lp)
 
     switch(lp)
     {
-    case WM_LBUTTONDOWN:
-    case WM_RBUTTONDOWN:
-    case WM_LBUTTONDBLCLK:
-    case WM_RBUTTONDBLCLK:
+        case WM_LBUTTONDOWN:
+        case WM_RBUTTONDOWN:
+        case WM_LBUTTONDBLCLK:
+        case WM_RBUTTONDBLCLK:
         {
             POINT cp;
             GetCursorPos(&cp);
 
+            CreateDevicesSubMenu();
+            SetForegroundWindow();
            _menu.TrackPopupMenu(TPM_RIGHTALIGN |TPM_RETURNCMD, cp.x, cp.y, this);
+
+           DestroyDevicesSubMenu();
+
+           break;
         }
+
+        default:
+            break;
     }
-    return 0;
+    return NULL;
+}
+
+LRESULT CSerialNotifierDlg::OnChangedSerialList(WPARAM wp, LPARAM lp)
+{
+    (void)wp;
+    (void)lp;
+
+    Serial::SerialListDiff diff = _serial.refresh_serial_list();
+    //MessageBox(TEXT("qwerty мама мыла раму"), TEXT("123"), MB_OK | MB_ICONINFORMATION);
+
+
+    return NULL;
+}
+
+UINT CSerialNotifierDlg::SerialListChangingMonitor(LPVOID param)
+{
+    (void)param;
+
+    while(1)
+    {
+        ::Sleep(5*1000);
+        //PostMessage(hwnd, WM_MYICONNOTIFY, NULL, WM_LBUTTONDOWN);
+        AfxGetMainWnd()->PostMessage(WM_SERIAL_LIST_WAS_CHANGED, NULL, NULL);
+
+        //TODO monitor the registry
+    }
 }
