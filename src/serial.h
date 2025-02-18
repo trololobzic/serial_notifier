@@ -74,6 +74,9 @@ class Serial
 public:
     typedef std::vector<SerialDevice> SerialList;
 
+    const HKEY serials_reg_section;
+    const CString serials_reg_path;
+
     struct SerialListDiff
     {
         SerialList plugged_devices;
@@ -81,8 +84,8 @@ public:
     };
 
     Serial() :
-        _serials_reg_section(HKEY_LOCAL_MACHINE),
-        _serials_reg_path(TEXT("HARDWARE\\DEVICEMAP\\SERIALCOMM"))
+        serials_reg_section(HKEY_LOCAL_MACHINE),
+        serials_reg_path(TEXT("HARDWARE\\DEVICEMAP\\SERIALCOMM"))
     {
         _serial_list = _read_serial_list();
         setup_descriptions(_serial_list);
@@ -103,6 +106,11 @@ public:
     SerialList get_list() const
     {
         return _serial_list;
+    }
+
+    size_t get_list_size() const
+    {
+        return _serial_list.size();
     }
 
     inline static void setup_descriptions(SerialList & serial_list)
@@ -126,7 +134,7 @@ public:
             if (::SetupDiGetDeviceRegistryProperty(h_device_info, &dev_info_data, SPDRP_FRIENDLYNAME, &reg_data_type, (PBYTE)property_buffer, (property_buffer_size - 1) * sizeof(TCHAR), NULL) &&
                 ::_tcslen(property_buffer))
             {
-                 SerialList::iterator serial_list_iterator = std::find(serial_list.begin(), serial_list.end(), SerialDevice(TEXT(""), property_buffer));
+                SerialList::iterator serial_list_iterator = _find_by_friendly_name(serial_list.begin(), serial_list.end(), property_buffer);
                 ::memset(property_buffer, 0 , property_buffer_size * sizeof(TCHAR));
 
                 if (serial_list_iterator != serial_list.end() &&
@@ -147,14 +155,12 @@ public:
 
 private:
     SerialList _serial_list;
-    const HKEY _serials_reg_section;
-    const CString _serials_reg_path;
 
     SerialList _read_serial_list() const
     {
         SerialList serial_list;
         TRegistry::EntriesSet reg_entries;
-        if (!TRegistry::get_key_value(_serials_reg_section, _serials_reg_path, reg_entries))
+        if (!TRegistry::get_key_value(serials_reg_section, serials_reg_path, reg_entries))
         {
             return serial_list;
         }
@@ -170,6 +176,17 @@ private:
 
         std::sort(serial_list.begin(), serial_list.end());
         return serial_list;
+    }
+
+    inline static SerialList::iterator _find_by_friendly_name(const SerialList::iterator & begin, const SerialList::iterator & end, const CString & friendly_name)
+    {
+        for (SerialList::iterator it = begin; it != end; it++)
+        {
+            CString dev_name_in_friendly_name = CString(TEXT("(")) + it->device_name + CString(TEXT(")"));
+            if (friendly_name.Find(dev_name_in_friendly_name) != -1)
+                return it;
+        }
+        return end;
     }
 };
 

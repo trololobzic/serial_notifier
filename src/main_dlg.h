@@ -60,8 +60,11 @@ protected:
 
 
     LRESULT OnTrayIconEvent(WPARAM wp, LPARAM lp);
+    LRESULT OnChoiceMenuItemAutorun(WPARAM wp, LPARAM lp);
+    LRESULT OnChoiceMenuItemPopup(WPARAM wp, LPARAM lp);
+    LRESULT OnChoiceMenuItemSerialList(WPARAM wp, LPARAM lp);
 
-    LRESULT OnChangedSerialList(WPARAM wp, LPARAM lp);
+    LRESULT OnChangedSerialList(WPARAM wp, LPARAM lp);  
 
 
 protected:

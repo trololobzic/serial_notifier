@@ -29,6 +29,13 @@ BEGIN_MESSAGE_MAP(CSerialNotifierDlg, CDialog)
     ON_WM_DESTROY()
     ON_MESSAGE(WM_TRAYICON_EVENT, OnTrayIconEvent)
     ON_MESSAGE(WM_SERIAL_LIST_WAS_CHANGED, OnChangedSerialList)
+    ON_MESSAGE(WM_POPUP_AUTORUN, OnChoiceMenuItemAutorun)
+    ON_MESSAGE(WM_POPUP_POPUP_ENABLE, OnChoiceMenuItemPopup)
+    ON_MESSAGE(WM_POPUP_SERIAL_LIST, OnChoiceMenuItemSerialList)
+
+    
+
+    
 
     //ON_WM_QUERYDRAGICON()
     //}}AFX_MSG_MAP
@@ -60,7 +67,7 @@ BOOL CSerialNotifierDlg::OnInitDialog()
     //UINT tread_id = ::GetCurrentThreadId();
 
     ;
-    AfxBeginThread(SerialListChangingMonitor, this->m_hWnd );
+    AfxBeginThread(SerialListChangingMonitor, &_serial);
     return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
@@ -232,28 +239,75 @@ LRESULT CSerialNotifierDlg::OnTrayIconEvent(WPARAM wp, LPARAM lp)
 {
     (void)wp;
 
-    switch(lp)
+    if (lp != WM_LBUTTONDOWN && lp != WM_RBUTTONDOWN)
+        return NULL;
+
+    POINT cp;
+    GetCursorPos(&cp);
+
+    CreateDevicesSubMenu();
+    SetForegroundWindow();
+
+    INT32 menu_choice = _menu.TrackPopupMenu(TPM_RIGHTALIGN |TPM_RETURNCMD, cp.x, cp.y, this);
+    if (menu_choice == WM_POPUP_AUTORUN)
     {
-        case WM_LBUTTONDOWN:
-        case WM_RBUTTONDOWN:
-        case WM_LBUTTONDBLCLK:
-        case WM_RBUTTONDBLCLK:
-        {
-            POINT cp;
-            GetCursorPos(&cp);
-
-            CreateDevicesSubMenu();
-            SetForegroundWindow();
-           _menu.TrackPopupMenu(TPM_RIGHTALIGN |TPM_RETURNCMD, cp.x, cp.y, this);
-
-           DestroyDevicesSubMenu();
-
-           break;
-        }
-
-        default:
-            break;
+        SendMessage(WM_POPUP_AUTORUN, NULL, NULL); //handle message immediately
     }
+    else if (menu_choice == WM_POPUP_POPUP_ENABLE)
+    {
+        SendMessage(WM_POPUP_POPUP_ENABLE, NULL, NULL); //handle message immediately
+    }
+    else if (menu_choice == WM_POPUP_EXIT)
+    {
+        DestroyWindow();
+	    PostQuitMessage(0);
+    }
+    else if (menu_choice >= WM_POPUP_SERIAL_LIST && menu_choice < WM_POPUP_SERIAL_LIST + static_cast<INT32>(_serial.get_list_size()))
+    {
+        size_t device_idx = menu_choice - WM_POPUP_SERIAL_LIST;
+        SendMessage(WM_POPUP_SERIAL_LIST, static_cast<LPARAM>(device_idx), NULL); //handle message immediately
+    }
+
+    DestroyDevicesSubMenu();
+    return NULL;
+}
+
+LRESULT CSerialNotifierDlg::OnChoiceMenuItemAutorun(WPARAM wp, LPARAM lp)
+{
+    (void)wp;
+    (void)lp;
+
+    if (_menu.GetMenuState(WM_POPUP_AUTORUN, MF_BYCOMMAND) & MF_CHECKED)
+    {
+        _settings.autorun(false);
+        _menu.CheckMenuItem(WM_POPUP_AUTORUN, MF_UNCHECKED );
+    }
+    else
+    {
+        _settings.autorun(true);
+        _menu.CheckMenuItem(WM_POPUP_AUTORUN, MF_CHECKED );
+    }
+
+    return NULL;
+}
+
+LRESULT CSerialNotifierDlg::OnChoiceMenuItemPopup(WPARAM wp, LPARAM lp)
+{
+    (void)wp;
+    (void)lp;
+
+    //TODO
+
+    return NULL;
+}
+
+LRESULT CSerialNotifierDlg::OnChoiceMenuItemSerialList(WPARAM wp, LPARAM lp)
+{
+    (void)wp;
+    (void)lp;
+
+    //TODO
+
     return NULL;
 }
 
@@ -263,6 +317,8 @@ LRESULT CSerialNotifierDlg::OnChangedSerialList(WPARAM wp, LPARAM lp)
     (void)lp;
 
     Serial::SerialListDiff diff = _serial.refresh_serial_list();
+
+    ShowTrayIconBalloon(TEXT("Serial notifier"), TEXT("AAAAAAA!!!!!!!!"), 5000, NIF_INFO);
     //MessageBox(TEXT("qwerty мама мыла раму"), TEXT("123"), MB_OK | MB_ICONINFORMATION);
 
 
@@ -271,14 +327,17 @@ LRESULT CSerialNotifierDlg::OnChangedSerialList(WPARAM wp, LPARAM lp)
 
 UINT CSerialNotifierDlg::SerialListChangingMonitor(LPVOID param)
 {
-    (void)param;
+    const Serial * serial_ptr = static_cast<Serial*>(param); 
 
     while(1)
     {
-        ::Sleep(5*1000);
-        //PostMessage(hwnd, WM_MYICONNOTIFY, NULL, WM_LBUTTONDOWN);
-        AfxGetMainWnd()->PostMessage(WM_SERIAL_LIST_WAS_CHANGED, NULL, NULL);
-
-        //TODO monitor the registry
+        if (serial_notifier::Registry::blocking_wait_for_changing(serial_ptr->serials_reg_section, serial_ptr->serials_reg_path))
+        {
+            AfxGetMainWnd()->PostMessage(WM_SERIAL_LIST_WAS_CHANGED, NULL, NULL); //push message to message queue
+        }
+        else
+        {
+            ::Sleep(200);
+        }
     }
 }
