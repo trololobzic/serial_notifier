@@ -58,7 +58,7 @@ BOOL CSerialNotifierDlg::OnInitDialog()
     //this->TrayIcon_Start(_T("Serial Monitor"));
 
     CreateTrayIcon();
-    SetTrayIconTipText(TEXT("Serial monitor"));
+    SetTrayIconTipText(TEXT("Serial notifier"));
 
     //MessageBox(TEXT("qwerty мама мыла раму"), TEXT("123"), MB_OK | MB_ICONINFORMATION);
 
@@ -66,6 +66,7 @@ BOOL CSerialNotifierDlg::OnInitDialog()
 
     //UINT tread_id = ::GetCurrentThreadId();
 
+    //ShowTrayIconBalloon(TEXT("Serial notifier"), TEXT("AAAAAAA!!!!!!!!\n"), 1000, NIIF_INFO);
     ;
     AfxBeginThread(SerialListChangingMonitor, &_serial);
     return TRUE;  // return TRUE  unless you set the focus to a control
@@ -115,8 +116,8 @@ void CSerialNotifierDlg::OnDestroy()
 
 BOOL CSerialNotifierDlg::CreateTrayIcon()
 {
-    memset(&_notify_icon_data, 0 , sizeof(_notify_icon_data));
-    _notify_icon_data.cbSize = sizeof(_notify_icon_data);
+    ::memset(&_notify_icon_data, 0 , sizeof(_notify_icon_data));
+    _notify_icon_data.cbSize = NOTIFYICONDATA_V3_SIZE;
 
     // set tray icon ID
     _notify_icon_data.uID = IDD_SYSTEMTRAY;
@@ -134,6 +135,8 @@ BOOL CSerialNotifierDlg::CreateTrayIcon()
     // set image
     _notify_icon_data.hIcon = LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDR_MAINFRAME1));
 
+    _notify_icon_data.uTimeout = 1000u;
+
     if(!_notify_icon_data.hIcon)
         return FALSE;
 
@@ -150,25 +153,31 @@ BOOL CSerialNotifierDlg::DestroyTrayIcon()
     return Shell_NotifyIcon(NIM_DELETE, &_notify_icon_data);
 }
 
-BOOL CSerialNotifierDlg::SetTrayIconTipText(LPCTSTR pszText)
+BOOL CSerialNotifierDlg::SetTrayIconTipText(const CString & text)
 {
-    if(StringCchCopy(_notify_icon_data.szTip, sizeof(_notify_icon_data.szTip), pszText) != S_OK)
+    if(StringCchCopy(_notify_icon_data.szTip, sizeof(_notify_icon_data.szTip), text) != S_OK)
         return FALSE;
 
     _notify_icon_data.uFlags |= NIF_TIP;
     return Shell_NotifyIcon(NIM_MODIFY, &_notify_icon_data);
 }
 
-BOOL CSerialNotifierDlg::ShowTrayIconBalloon(LPCTSTR pszTitle, LPCTSTR pszText, UINT unTimeout, DWORD dwInfoFlags)
+/*
+* Show notify ballooon message in tray.
+* const CString & title  - title of balloon
+* const CString & text   - messsage text
+* const DWORD flags      - one of theese defines: NIIF_INFO, NIIF_WARNING, NIIF_ERROR, NIF_USER or 0
+*/
+BOOL CSerialNotifierDlg::ShowTrayIconBalloon(const CString & title, const CString & text, const DWORD flags)
 {
     _notify_icon_data.uFlags |= NIF_INFO;
-    _notify_icon_data.uTimeout = unTimeout;
-    _notify_icon_data.dwInfoFlags = dwInfoFlags;
+    //_notify_icon_data.uTimeout = unTimeout;
+    _notify_icon_data.dwInfoFlags = flags;
 
-    if(StringCchCopy(_notify_icon_data.szInfoTitle, sizeof(_notify_icon_data.szInfoTitle), pszTitle) != S_OK)
+    if(::StringCchCopy(_notify_icon_data.szInfoTitle, sizeof(_notify_icon_data.szInfoTitle), title) != S_OK)
         return FALSE;
 
-    if(StringCchCopy(_notify_icon_data.szInfo, sizeof(_notify_icon_data.szInfo), pszText) != S_OK)
+    if(::StringCchCopy(_notify_icon_data.szInfo, sizeof(_notify_icon_data.szInfo), text) != S_OK)
         return FALSE;
 
     return Shell_NotifyIcon(NIM_MODIFY, &_notify_icon_data);
@@ -316,12 +325,21 @@ LRESULT CSerialNotifierDlg::OnChangedSerialList(WPARAM wp, LPARAM lp)
     (void)wp;
     (void)lp;
 
+    Sleep(200);
+
     Serial::SerialListDiff diff = _serial.refresh_serial_list();
 
-    ShowTrayIconBalloon(TEXT("Serial notifier"), TEXT("AAAAAAA!!!!!!!!"), 5000, NIF_INFO);
-    //MessageBox(TEXT("qwerty мама мыла раму"), TEXT("123"), MB_OK | MB_ICONINFORMATION);
+    if (diff.plugged_devices.empty() && diff.unplugged_devices.empty())
+        return NULL;
 
+    CString plugged_message = MakeBalloonMessage(diff.plugged_devices, TEXT("Plugged"), TEXT("Plugged"));
+    CString unplugged_message = MakeBalloonMessage(diff.unplugged_devices, TEXT("Unplugged"), TEXT("Unplugged"));
+    if (plugged_message.GetLength() && unplugged_message.GetLength())
+    {
+        plugged_message += CString(TEXT("\n"));
+    }
 
+    ShowTrayIconBalloon(TEXT("Serial notifier"), plugged_message + unplugged_message, NIIF_USER);
     return NULL;
 }
 
@@ -340,4 +358,30 @@ UINT CSerialNotifierDlg::SerialListChangingMonitor(LPVOID param)
             ::Sleep(200);
         }
     }
+}
+
+CString CSerialNotifierDlg::MakeBalloonMessage(const Serial::SerialList & serial_list, const CString & singular_prefix, const CString & plural_prefix)
+{
+    CString message;
+    switch (serial_list.size())
+    {
+        case 0:
+            break;
+
+        case 1:
+            message += singular_prefix + CString(TEXT(" ")) + serial_list[0].device_name;
+            break;
+
+        default:
+        {
+            message += plural_prefix + CString(TEXT(":\n"));
+            for (Serial::SerialList::const_iterator it = serial_list.begin(); it != serial_list.end(); it++)
+            {
+                message += it->device_name + CString(TEXT("\n"));
+            }
+            message.Delete(message.GetLength() - 1);
+            break;
+        }
+    }
+    return message;
 }

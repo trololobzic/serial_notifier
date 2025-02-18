@@ -47,8 +47,8 @@ protected:
     static UINT SerialListChangingMonitor(LPVOID);
     // Tray icon handle methods
     BOOL CreateTrayIcon();
-    BOOL SetTrayIconTipText(LPCTSTR pszText);
-    BOOL ShowTrayIconBalloon(LPCTSTR pszTitle, LPCTSTR pszText, UINT unTimeout, DWORD dwInfoFlags);
+    BOOL SetTrayIconTipText(const CString & text);
+    BOOL ShowTrayIconBalloon(const CString & title, const CString & text, const DWORD dwInfoFlags);
     BOOL SetTrayIcon(HICON hIcon);
     BOOL SetTrayIcon(WORD wIconID);
     BOOL DestroyTrayIcon();
@@ -64,7 +64,9 @@ protected:
     LRESULT OnChoiceMenuItemPopup(WPARAM wp, LPARAM lp);
     LRESULT OnChoiceMenuItemSerialList(WPARAM wp, LPARAM lp);
 
-    LRESULT OnChangedSerialList(WPARAM wp, LPARAM lp);  
+    LRESULT OnChangedSerialList(WPARAM wp, LPARAM lp);
+
+    CString MakeBalloonMessage(const Serial::SerialList & serial_list, const CString & singular_prefix, const CString & plural_prefix);
 
 
 protected:
