@@ -1,5 +1,7 @@
+*.aps
+*.sln
 *.exe
-*.htm
+*.user
+*.vcproj
 *.pdb
-s_tray/Release/*
-s_tray/Debug/*
+*.ilk
