@@ -302,7 +302,7 @@ LRESULT CSerialNotifierDlg::OnChoiceMenuItemPopup(WPARAM wp, LPARAM lp)
         }
         else
         {
-            if ( MessageBox(TEXT("Popup messages are disable in this system. Enable?", TEXT("Serial notifier"), MB_YESNO | MB_ICONQUESTION)) == IDYES)
+            if ( MessageBox(TEXT("Popup messages are disable in this system. Enable?"), TEXT("Serial notifier"), MB_YESNO | MB_ICONQUESTION) == IDYES)
             {
                 _settings.system_popup(true);
                 _settings.popup(true);
