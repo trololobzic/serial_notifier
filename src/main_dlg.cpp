@@ -32,42 +32,23 @@ BEGIN_MESSAGE_MAP(CSerialNotifierDlg, CDialog)
     ON_MESSAGE(WM_POPUP_AUTORUN, OnChoiceMenuItemAutorun)
     ON_MESSAGE(WM_POPUP_POPUP_ENABLE, OnChoiceMenuItemPopup)
     ON_MESSAGE(WM_POPUP_SERIAL_LIST, OnChoiceMenuItemSerialList)
-
-    
-
-    
-
     //ON_WM_QUERYDRAGICON()
-    //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 
-// Cmfc1Dlg message handlers
 
 BOOL CSerialNotifierDlg::OnInitDialog()
 {
     CDialog::OnInitDialog();
 
-    // Set the icon for this dialog.  The framework does this automatically
-    //  when the application's main window is not a dialog
     SetIcon(_h_icon, TRUE);            // Set big icon
     SetIcon(_h_icon, FALSE);        // Set small icon
 
-
-    // TODO: Add extra initialization here
-    //this->TrayIcon_Start(_T("Serial Monitor"));
-
+    // Add extra initialization here
     CreateTrayIcon();
     SetTrayIconTipText(TEXT("Serial notifier"));
 
-    //MessageBox(TEXT("qwerty мама мыла раму"), TEXT("123"), MB_OK | MB_ICONINFORMATION);
-
     PrepareMenu();
-
-    //UINT tread_id = ::GetCurrentThreadId();
-
-    //ShowTrayIconBalloon(TEXT("Serial notifier"), TEXT("AAAAAAA!!!!!!!!\n"), 1000, NIIF_INFO);
-    ;
     AfxBeginThread(SerialListChangingMonitor, &_serial);
     return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -78,7 +59,7 @@ BOOL CSerialNotifierDlg::OnInitDialog()
 
 void CSerialNotifierDlg::OnPaint()
 {
-    //ShowWindow(SW_HIDE);
+    ShowWindow(SW_HIDE);
     if (IsIconic())
     {
         CPaintDC dc(this); // device context for painting
@@ -170,8 +151,10 @@ BOOL CSerialNotifierDlg::SetTrayIconTipText(const CString & text)
 */
 BOOL CSerialNotifierDlg::ShowTrayIconBalloon(const CString & title, const CString & text, const DWORD flags)
 {
+    if (!_settings.popup())
+        return FALSE;
+
     _notify_icon_data.uFlags |= NIF_INFO;
-    //_notify_icon_data.uTimeout = unTimeout;
     _notify_icon_data.dwInfoFlags = flags;
 
     if(::StringCchCopy(_notify_icon_data.szInfoTitle, sizeof(_notify_icon_data.szInfoTitle), title) != S_OK)
@@ -274,7 +257,7 @@ LRESULT CSerialNotifierDlg::OnTrayIconEvent(WPARAM wp, LPARAM lp)
     else if (menu_choice >= WM_POPUP_SERIAL_LIST && menu_choice < WM_POPUP_SERIAL_LIST + static_cast<INT32>(_serial.get_list_size()))
     {
         size_t device_idx = menu_choice - WM_POPUP_SERIAL_LIST;
-        SendMessage(WM_POPUP_SERIAL_LIST, static_cast<LPARAM>(device_idx), NULL); //handle message immediately
+        SendMessage(WM_POPUP_SERIAL_LIST, static_cast<WPARAM>(device_idx), NULL); //handle message immediately
     }
 
     DestroyDevicesSubMenu();
@@ -305,18 +288,44 @@ LRESULT CSerialNotifierDlg::OnChoiceMenuItemPopup(WPARAM wp, LPARAM lp)
     (void)wp;
     (void)lp;
 
-    //TODO
+    if (_menu.GetMenuState(WM_POPUP_POPUP_ENABLE, MF_BYCOMMAND) & MF_CHECKED)
+    {
+        _settings.popup(false);
+        _menu.CheckMenuItem(WM_POPUP_POPUP_ENABLE, MF_UNCHECKED );
+    }
+    else
+    {
+        if (_settings.system_popup())
+        {
+            _settings.popup(true);
+            _menu.CheckMenuItem(WM_POPUP_POPUP_ENABLE, MF_CHECKED );
+        }
+        else
+        {
+            if ( MessageBox(TEXT("Popup messages are disable in this system. Enable?", TEXT("Serial notifier"), MB_YESNO | MB_ICONQUESTION)) == IDYES)
+            {
+                _settings.system_popup(true);
+                _settings.popup(true);
+                _menu.CheckMenuItem(WM_POPUP_POPUP_ENABLE, MF_CHECKED );
+            }
+        }
+    }
 
     return NULL;
 }
 
 LRESULT CSerialNotifierDlg::OnChoiceMenuItemSerialList(WPARAM wp, LPARAM lp)
 {
-    (void)wp;
     (void)lp;
 
-    //TODO
+    serial_notifier::SerialDevice device = _serial.get_list()[static_cast<size_t>(wp)];
 
+    MessageBoxData * mesage_box_data = new MessageBoxData;
+    mesage_box_data->title.Format(TEXT("Serial notifier"));
+    mesage_box_data->text.Format(TEXT("Port: %s\nFriendly name: %s\nDescription: %s"), device.device_name, device.friendly_name, device.description);
+    mesage_box_data->flags = MB_OK | MB_ICONINFORMATION;
+
+    AfxBeginThread(ShowMessageBox, mesage_box_data);
     return NULL;
 }
 
@@ -345,7 +354,7 @@ LRESULT CSerialNotifierDlg::OnChangedSerialList(WPARAM wp, LPARAM lp)
 
 UINT CSerialNotifierDlg::SerialListChangingMonitor(LPVOID param)
 {
-    const Serial * serial_ptr = static_cast<Serial*>(param); 
+    const Serial * serial_ptr = static_cast<Serial*>(param);
 
     while(1)
     {
@@ -358,6 +367,14 @@ UINT CSerialNotifierDlg::SerialListChangingMonitor(LPVOID param)
             ::Sleep(200);
         }
     }
+}
+
+UINT CSerialNotifierDlg::ShowMessageBox(LPVOID param)
+{
+    MessageBoxData * mesage_box_data = static_cast<MessageBoxData *>(param);
+    ::MessageBox(NULL, mesage_box_data->text, mesage_box_data->title, mesage_box_data->flags);
+    delete mesage_box_data;
+    return 0;
 }
 
 CString CSerialNotifierDlg::MakeBalloonMessage(const Serial::SerialList & serial_list, const CString & singular_prefix, const CString & plural_prefix)

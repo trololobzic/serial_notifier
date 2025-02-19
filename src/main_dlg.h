@@ -42,9 +42,18 @@ protected:
     Settings&      _settings;
     Serial&        _serial;
 
+    struct MessageBoxData
+    {
+        CString title;
+        CString text;
+        UINT flags;
+    };
+
 protected:
     //
     static UINT SerialListChangingMonitor(LPVOID);
+    static UINT ShowMessageBox(LPVOID);
+
     // Tray icon handle methods
     BOOL CreateTrayIcon();
     BOOL SetTrayIconTipText(const CString & text);
