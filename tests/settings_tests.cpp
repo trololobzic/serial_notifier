@@ -62,6 +62,11 @@ struct TestRegistry1 : public TestRegistry
         return false;
     }
 
+    inline static bool is_path_valid(const HKEY section, const TCHAR * path)
+    {
+        return false;
+    }
+
     inline static bool delete_key(const HKEY section, const TCHAR * path, const TCHAR * key)
     {
         (void)section;
@@ -127,11 +132,63 @@ struct TestRegistry2 : public TestRegistry
 
         return false;
     }
+
+    inline static bool is_path_valid(const HKEY section, const TCHAR * path)
+    {
+        return false;
+    }
 };
 
 bool TestRegistry2::flag1 = false;
 bool TestRegistry2::flag2 = false;
 bool TestRegistry2::flag3 = false;
+
+struct TestRegistry3 : public TestRegistry
+{
+    inline static bool get_key_value(const HKEY section, const TCHAR * path, const TCHAR * key, serial_notifier::RegistryValue & value)
+    {
+        (void)section;
+        (void)path;
+        if (!::lstrcmp(key, TEXT("serial_notifier")))
+        {
+            return false;
+        }
+        else if (!::lstrcmp(key, TEXT("popup_enable")))
+        {
+            return false;
+        }
+        else if (!::lstrcmp(key, TEXT("EnableBallonTip")))
+        {
+            value = serial_notifier::RegistryValue(UINT32(1));
+            return true;
+        }
+        return false;
+    }
+
+    inline static bool set_key_value(const HKEY section, const TCHAR * path, const TCHAR * key, const serial_notifier::RegistryValue & value)
+    {
+        (void)section;
+        (void)path;
+        (void)key;
+        (void)value;
+
+        return false;
+    }
+
+    inline static bool delete_key(const HKEY section, const TCHAR * path, const TCHAR * key)
+    {
+        (void)section;
+        (void)path;
+        (void)key;
+
+        return false;
+    }
+
+    inline static bool is_path_valid(const HKEY section, const TCHAR * path)
+    {
+        return false;
+    }
+};
 
 static CString make_app_path()
 {
@@ -178,4 +235,13 @@ TEST_CASE("Testing settings for all flags are false", "[settings]")
     REQUIRE(TestRegistry2::flag1);
     REQUIRE(TestRegistry2::flag2);
     REQUIRE(TestRegistry2::flag3);
+}
+
+TEST_CASE("Testing settings force popup setting up", "[settings]")
+{
+    serial_notifier::Settings<TestRegistry3> settings(true);
+
+    REQUIRE(settings.popup());
+    REQUIRE_FALSE(settings.autorun());
+    REQUIRE(settings.system_popup());
 }

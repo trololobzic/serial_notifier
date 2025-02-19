@@ -11,7 +11,8 @@ BEGIN_MESSAGE_MAP(CSerialNotifierApp, CWinAppEx)
 END_MESSAGE_MAP()
 
 
-CSerialNotifierApp::CSerialNotifierApp()
+CSerialNotifierApp::CSerialNotifierApp() :
+    _settings(true)
 {
 }
 
