@@ -1,25 +1,16 @@
 ﻿cmake_minimum_required(VERSION 3.13)
 
-macro(set_warning_level flags_set level)
-    if("${${flags_set}}" MATCHES "/W[0-4]")
-        string(REGEX REPLACE "/W[0-4]" "${level}" ${flags_set} "${${flags_set}}")
-    else()
-        set(${flags_set} "${${flags_set}} ${level}")
-    endif()
-endmacro()
-
-macro(set_optimization_level flags_set level)
-    if("${${flags_set}}" MATCHES "/O[0-4,x]")
-        string(REGEX REPLACE "/O[0-4,x]" "${level}" ${flags_set} "${${flags_set}}")
-    else()
-        set(${flags_set} "${${flags_set}} ${level}")
-    endif()
+macro(force_set_flags var these those)
+  if("${${var}}" MATCHES "${these}")
+    string(REGEX REPLACE "${these}" "${those}" ${var} "${${var}}")
+  else()
+    set(${var} "${${var}} ${those}")
+  endif()
 endmacro()
 
 macro(replace_flags var these those)
   if("${${var}}" MATCHES "${these}")
     string(REGEX REPLACE "${these}" "${those}" ${var} "${${var}}")
-    #message(STATUS "info: ${var} changed to '${${var}}'")
   endif()
   message(STATUS "info: ${var}='${${var}}'")
 endmacro()
@@ -42,14 +33,16 @@ macro(msvc_link_to_static_crt)
 endmacro()
 
 project(serial_notifier)
-set_warning_level(CMAKE_CXX_FLAGS "/W4")
-set_warning_level(CMAKE_CXX_FLAGS_DEBUG "/W4")
-set_warning_level(CMAKE_C_FLAGS "/W4")
-set_warning_level(CMAKE_C_FLAGS_DEBUG "/W4")
+set(CMAKE_MFC_FLAG 1)
+#set warning level
+force_set_flags(CMAKE_CXX_FLAGS "/W[0-4]" "/W4")
+force_set_flags(CMAKE_CXX_FLAGS_DEBUG "/W[0-4]" "/W3")
+force_set_flags(CMAKE_C_FLAGS "/W[0-4]" "/W4")
+force_set_flags(CMAKE_C_FLAGS_DEBUG "/W[0-4]" "/W3")
 
-set_optimization_level(CMAKE_CXX_FLAGS_RELEASE "/Ox")
-set_optimization_level(CMAKE_C_FLAGS_RELEASE "/Ox")
-
+#set optimization level
+force_set_flags(CMAKE_CXX_FLAGS_RELEASE "/O[0-4,x]" "/Ox")
+force_set_flags(CMAKE_C_FLAGS_RELEASE "/O[0-4,x]" "/Ox")
 
 FIND_PACKAGE(MFC)
 IF (NOT MFC_FOUND)
@@ -59,8 +52,6 @@ ENDIF()
 file(GLOB_RECURSE SRCS "src/*.cpp")
 file(GLOB_RECURSE HEARDERS "src/*.h")
 file(GLOB_RECURSE RESOURSES "src/*.rc" "src/*.rc2")
-#set(RESOURSES src/serial_notifier.rc src/res/serial_notifier.rc2)
-set(CMAKE_MFC_FLAG 1)
 
 if("${CMAKE_MFC_FLAG}" STREQUAL "1")
   msvc_link_to_static_crt()
@@ -71,12 +62,6 @@ else()
 endif()
 
 add_executable(${PROJECT_NAME} WIN32 ${SRCS} ${HEARDERS} ${RESOURSES})
-target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
-#install(TARGETS ${PROJECT_NAME} DESTINATION bin)
-
-
-
-
 
 if("${CMAKE_MFC_FLAG}" STREQUAL "2")
   set(CMAKE_INSTALL_MFC_LIBRARIES ON)
@@ -86,14 +71,9 @@ endif()
 add_definitions(-DUNICODE)
 add_definitions(-D_UNICODE)
 
-#TODO: add option to switch on/off tests compile
+
+#Tests project in the same solution
 set(TESTS_PROJECT_NAME "${PROJECT_NAME}_tests")
 file(GLOB_RECURSE TESTS_SRC "tests/*.cpp" "tests/*.h" "tests/*.hpp")
 add_executable(${TESTS_PROJECT_NAME} EXCLUDE_FROM_ALL ${TESTS_SRC})
 add_dependencies(${PROJECT_NAME} ${TESTS_PROJECT_NAME})
-
-
-# Encode the value inside a generator expression to test evaluation.
-#set(CMAKE_MFC_FLAG "$<1:${CMAKE_MFC_FLAG}>")
-
-

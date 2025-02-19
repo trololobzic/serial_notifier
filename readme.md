@@ -17,7 +17,7 @@ Unfortunately, the developer has not found a way to correctly compile C++11 and 
 ## Building
 Building the project requires the following software to be installed:
 - Windows (at least Windows XP)
-- CMake (at least version 3.5)
+- CMake (at least version 3.13)
 - Microsoft Visual Studio (at least "Visual Studio 9 2008")
 
 After cloning the project you should execute next commands:
