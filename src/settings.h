@@ -26,7 +26,7 @@ class Settings
 
 public:
 
-    inline Settings():
+    inline Settings(const bool force_popup_enable = false):
         _module_name(TEXT("serial_notifier")),
         _autorun(HKEY_CURRENT_USER, TEXT("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run"), _module_name, false),
         _popup(HKEY_CURRENT_USER, _make_app_reg_path(), TEXT("popup_enable"), false),
@@ -40,6 +40,11 @@ public:
         _fill_property_from_registry(_system_popup0, REG_DWORD, true, false, _is_value_true);
         //_fill_property_from_registry(_system_popup1, REG_DWORD, true, false, _is_value_true);
         //_fill_property_from_registry(_system_popup2, REG_DWORD, false, true, _is_value_true);
+
+        if (force_popup_enable && _system_popup0.value && !TRegistry::is_path_valid(_popup.reg_section, _popup.reg_path))
+        {
+            popup(true);
+        }
     }
 
     inline bool autorun() const
