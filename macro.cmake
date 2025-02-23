@@ -1,4 +1,6 @@
-#wrapper for directories_structure macro
+# wrapper for directories_structure macro
+# this macro works like `source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}  FILES ${FILES})` but renames
+# root directory in directories structure
 macro(create_directories_structure curdir root_folder_name)
   if(NOT IS_DIRECTORY ${PROJECT_SOURCE_DIR}/${curdir})
     message(FATAL_ERROR "${curdir} is not a directory")
@@ -19,6 +21,12 @@ macro(directories_structure curdir old_root_name new_root_name)
 	  string(REPLACE ${old_root_name} ${new_root_name} groupname ${groupname})
       source_group(${groupname} FILES ${PROJECT_SOURCE_DIR}/${curdir}/${child})
     endif()
+  endforeach()
+endmacro()
+
+macro(set_include_path project_name pathes_list)
+  foreach(path ${pathes_list})
+    target_include_directories(${project_name} PUBLIC "${path}")
   endforeach()
 endmacro()
 
