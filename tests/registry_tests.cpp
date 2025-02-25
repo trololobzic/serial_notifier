@@ -1,5 +1,5 @@
-﻿#include "../src/stdafx.h"
-#include "../src/registry/registry.h"
+﻿#include "stdafx.h"
+#include "registry.h"
 
 #define CATCH_CONFIG_NO_CPP11
 #include "catch.hpp"

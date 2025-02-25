@@ -1,11 +1,9 @@
 ﻿#pragma once
 #include <windows.h>
-//#include <initguid.h>
-//#include <devguid.h>
-//#include <setupapi.h>
 #include <vector>
 #include <algorithm>
 #include <strsafe.h>
+#include "lang.h"
 
 typedef serial_notifier::Settings<serial_notifier::Registry> Settings;
 typedef serial_notifier::Serial<serial_notifier::Registry> Serial;
@@ -30,7 +28,8 @@ public:
         WM_POPUP_POPUP_ENABLE,
         WM_POPUP_SEPARATOR,
         WM_POPUP_EXIT,
-        WM_POPUP_SERIAL_LIST,
+        WM_POPUP_LANGS_LIST,
+        WM_POPUP_SERIAL_LIST = WM_POPUP_LANGS_LIST + 1000,
     };
 
 // Implementation
@@ -39,8 +38,10 @@ protected:
     NOTIFYICONDATA _notify_icon_data;
     CMenu          _menu;
     CMenu          _devices_submenu;
+    CMenu          _languages_submenu;
     Settings&      _settings;
     Serial&        _serial;
+    serial_notifier::lang::TranslationBase const * _translation_ptr;
 
     struct MessageBoxData
     {
@@ -63,7 +64,8 @@ protected:
     BOOL DestroyTrayIcon();
 
     //popup menu methods
-    void PrepareMenu();
+    void CreateMenu();
+    void DestroyMenu();
     void CreateDevicesSubMenu();
     void DestroyDevicesSubMenu();
 
