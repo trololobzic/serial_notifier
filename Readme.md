@@ -23,11 +23,12 @@ Building the project requires the following software to be installed:
 After cloning the project you should execute next commands:
 ```
 cd serial_notifier\build
-cmake.exe .. -G "Visual Studio 9 2008"
+cmake.exe ..
 cmake.exe --build . --config Release
 ```
 Possible you should use full path to your installed CMake, for example ```"c:\Program Files\CMake\bin\cmake.exe"```.
-Possible variants for cmake key -G your can use:
+You may use "-G" key for set Visual Studio version directly.
+Possible variants for cmake "-G" key your can use:
 ```
 Visual Studio 16 2019
 Visual Studio 15 2017
