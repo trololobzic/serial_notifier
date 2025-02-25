@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "main_app.h"
 #include "main_dlg.h"
 #include "registry/registry.h"
@@ -351,7 +351,8 @@ LRESULT CSerialNotifierDlg::OnChoiceMenuItemPopup(WPARAM wp, LPARAM lp)
         }
         else
         {
-            if ( MessageBox(_translation_ptr->question_enable_sys_popup, _translation_ptr->app_name, MB_YESNO | MB_ICONQUESTION) == IDYES)
+            if (MessageBox(_translation_ptr->question_enable_sys_popup, _translation_ptr->app_name, MB_YESNO | MB_ICONQUESTION) == IDYES)
+
             {
                 _settings.system_popup(true);
                 _settings.popup(true);
