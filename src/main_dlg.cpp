@@ -41,14 +41,24 @@ BOOL CSerialNotifierDlg::OnInitDialog()
 {
     CDialog::OnInitDialog();
 
+    try
+    {
+        _translation_ptr = serial_notifier::lang::Lang::get_translation(static_cast<serial_notifier::lang::SupportedLanguagesEnum>(_settings.lang()));
+    }
+    catch(serial_notifier::Exception & e)
+    {
+        ::MessageBox(NULL, e.what(), TEXT("Serial notifier"), MB_OK | MB_ICONERROR);
+        DestroyWindow();
+	    PostQuitMessage(0);
+    }
+
     SetIcon(_h_icon, TRUE);            // Set big icon
     SetIcon(_h_icon, FALSE);        // Set small icon
 
     // Add extra initialization here
     CreateTrayIcon();
-    SetTrayIconTipText(TEXT("Serial notifier"));
+    SetTrayIconTipText(_translation_ptr->app_name);
 
-    PrepareMenu();
     AfxBeginThread(SerialListChangingMonitor, &_serial);
     return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -139,6 +149,7 @@ BOOL CSerialNotifierDlg::SetTrayIconTipText(const CString & text)
     if(StringCchCopy(_notify_icon_data.szTip, sizeof(_notify_icon_data.szTip), text) != S_OK)
         return FALSE;
 
+    _notify_icon_data.uFlags &= ~NIF_INFO;
     _notify_icon_data.uFlags |= NIF_TIP;
     return Shell_NotifyIcon(NIM_MODIFY, &_notify_icon_data);
 }
@@ -184,18 +195,41 @@ BOOL CSerialNotifierDlg::SetTrayIcon(WORD wIconID)
     return SetTrayIcon(hIcon);
 }
 
-VOID CSerialNotifierDlg::PrepareMenu()
+VOID CSerialNotifierDlg::CreateMenu()
 {
     _menu.CreatePopupMenu();
 
     _menu.AppendMenu(MF_SEPARATOR,  WM_POPUP_SEPARATOR,     TEXT(""));
-    _menu.AppendMenu(MF_STRING,     WM_POPUP_POPUP_ENABLE,  TEXT("Popup"));
-    _menu.AppendMenu(MF_STRING,     WM_POPUP_AUTORUN,       TEXT("Autorun"));
+    _menu.AppendMenu(MF_STRING,     WM_POPUP_POPUP_ENABLE,  _translation_ptr->menu_items.popup);
+    _menu.AppendMenu(MF_STRING,     WM_POPUP_AUTORUN,       _translation_ptr->menu_items.autorun);
     _menu.AppendMenu(MF_SEPARATOR,  WM_POPUP_SEPARATOR,     TEXT(""));
-    _menu.AppendMenu(MF_STRING,     WM_POPUP_EXIT,          TEXT("Exit"));
+    _menu.AppendMenu(MF_STRING,     WM_POPUP_EXIT,          _translation_ptr->menu_items.exit);
 
     _menu.CheckMenuItem(WM_POPUP_POPUP_ENABLE, _settings.popup() ? MF_CHECKED : MF_UNCHECKED);
     _menu.CheckMenuItem(WM_POPUP_AUTORUN,      _settings.autorun() ? MF_CHECKED : MF_UNCHECKED);
+
+    typedef serial_notifier::lang::Lang Lang;
+    const Lang::TranslationsList & translations_list = Lang::get_all_translations_list();
+    _languages_submenu.CreatePopupMenu();
+    for(Lang::TranslationsList::const_iterator it = translations_list.begin(); it != translations_list.end(); it++)
+    {
+        CString next_item_string = (*it)->lang_name;
+        size_t idx = std::distance(translations_list.begin(), it);
+        _languages_submenu.AppendMenu(MF_STRING , WM_POPUP_LANGS_LIST + idx, next_item_string);
+
+        if ((*it) == _translation_ptr)
+        {
+            _languages_submenu.CheckMenuItem(WM_POPUP_LANGS_LIST + idx, MF_CHECKED);
+        }
+    }
+    _menu.InsertMenu(1, MF_POPUP | MF_STRING| MF_BYPOSITION, (UINT)_languages_submenu.m_hMenu,  _translation_ptr->menu_items.languages);
+}
+
+void CSerialNotifierDlg::DestroyMenu()
+{
+    _languages_submenu.DestroyMenu();
+    _menu.DeleteMenu(1, MF_BYPOSITION);
+    _menu.DestroyMenu();
 }
 
 void CSerialNotifierDlg::CreateDevicesSubMenu()
@@ -215,10 +249,10 @@ void CSerialNotifierDlg::CreateDevicesSubMenu()
 
     if (serial_list.empty())
     {
-        _devices_submenu.AppendMenu(MF_STRING | MF_GRAYED, WM_POPUP_SERIAL_LIST , TEXT("(none)"));
+        _devices_submenu.AppendMenu(MF_STRING | MF_GRAYED, WM_POPUP_SERIAL_LIST , _translation_ptr->menu_items.none);
     }
 
-    _menu.InsertMenu(0, MF_POPUP | MF_STRING| MF_BYPOSITION, (UINT)_devices_submenu.m_hMenu,  TEXT("Devices"));
+    _menu.InsertMenu(0, MF_POPUP | MF_STRING| MF_BYPOSITION, (UINT)_devices_submenu.m_hMenu,  _translation_ptr->menu_items.devices);
 }
 
 void CSerialNotifierDlg::DestroyDevicesSubMenu()
@@ -237,6 +271,7 @@ LRESULT CSerialNotifierDlg::OnTrayIconEvent(WPARAM wp, LPARAM lp)
     POINT cp;
     GetCursorPos(&cp);
 
+    CreateMenu();
     CreateDevicesSubMenu();
     SetForegroundWindow();
 
@@ -259,8 +294,22 @@ LRESULT CSerialNotifierDlg::OnTrayIconEvent(WPARAM wp, LPARAM lp)
         size_t device_idx = menu_choice - WM_POPUP_SERIAL_LIST;
         SendMessage(WM_POPUP_SERIAL_LIST, static_cast<WPARAM>(device_idx), NULL); //handle message immediately
     }
+    else if (menu_choice >= WM_POPUP_LANGS_LIST && menu_choice < WM_POPUP_LANGS_LIST + static_cast<INT32>(serial_notifier::lang::Lang::get_all_translations_list().size()))
+    {
+        size_t lang_idx = menu_choice - WM_POPUP_LANGS_LIST;
+
+        const serial_notifier::lang::TranslationBase * const new_translation_ptr = serial_notifier::lang::Lang::get_all_translations_list()[lang_idx];
+        if (new_translation_ptr != _translation_ptr)
+        {
+            _settings.lang(new_translation_ptr->get_cur_kang_idx());
+            _translation_ptr = new_translation_ptr;
+
+            SetTrayIconTipText(_translation_ptr->app_name);
+        }
+    }
 
     DestroyDevicesSubMenu();
+    DestroyMenu();
     return NULL;
 }
 
@@ -302,7 +351,7 @@ LRESULT CSerialNotifierDlg::OnChoiceMenuItemPopup(WPARAM wp, LPARAM lp)
         }
         else
         {
-            if ( MessageBox(TEXT("Popup messages are disable in this system. Enable?"), TEXT("Serial notifier"), MB_YESNO | MB_ICONQUESTION) == IDYES)
+            if ( MessageBox(_translation_ptr->question_enable_sys_popup, _translation_ptr->app_name, MB_YESNO | MB_ICONQUESTION) == IDYES)
             {
                 _settings.system_popup(true);
                 _settings.popup(true);
@@ -321,8 +370,8 @@ LRESULT CSerialNotifierDlg::OnChoiceMenuItemSerialList(WPARAM wp, LPARAM lp)
     serial_notifier::SerialDevice device = _serial.get_list()[static_cast<size_t>(wp)];
 
     MessageBoxData * mesage_box_data = new MessageBoxData;
-    mesage_box_data->title.Format(TEXT("Serial notifier"));
-    mesage_box_data->text.Format(TEXT("Port: %s\nFriendly name: %s\nDescription: %s"), device.device_name, device.friendly_name, device.description);
+    mesage_box_data->title.Format(_translation_ptr->app_name);
+    mesage_box_data->text.Format(_translation_ptr->serial_info, device.device_name, device.friendly_name, device.description);
     mesage_box_data->flags = MB_OK | MB_ICONINFORMATION;
 
     AfxBeginThread(ShowMessageBox, mesage_box_data);
@@ -341,14 +390,14 @@ LRESULT CSerialNotifierDlg::OnChangedSerialList(WPARAM wp, LPARAM lp)
     if (diff.plugged_devices.empty() && diff.unplugged_devices.empty())
         return NULL;
 
-    CString plugged_message = MakeBalloonMessage(diff.plugged_devices, TEXT("Plugged"), TEXT("Plugged"));
-    CString unplugged_message = MakeBalloonMessage(diff.unplugged_devices, TEXT("Unplugged"), TEXT("Unplugged"));
+    CString plugged_message = MakeBalloonMessage(diff.plugged_devices, _translation_ptr->popup_messages.plugged_singular, _translation_ptr->popup_messages.plugged_plural);
+    CString unplugged_message = MakeBalloonMessage(diff.unplugged_devices, _translation_ptr->popup_messages.unplugged_singular, _translation_ptr->popup_messages.unplugged_plural);
     if (plugged_message.GetLength() && unplugged_message.GetLength())
     {
         plugged_message += CString(TEXT("\n"));
     }
 
-    ShowTrayIconBalloon(TEXT("Serial notifier"), plugged_message + unplugged_message, NIIF_USER);
+    ShowTrayIconBalloon(_translation_ptr->app_name, plugged_message + unplugged_message, NIIF_USER);
     return NULL;
 }
 

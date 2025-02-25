@@ -1,5 +1,6 @@
 ﻿#include "stdafx.h"
-#include "registry/registry.h"
+#include "registry.h"
+#include "lang.h"
 
 namespace serial_notifier
 {
@@ -30,9 +31,11 @@ public:
         _module_name(TEXT("serial_notifier")),
         _autorun(HKEY_CURRENT_USER, TEXT("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run"), _module_name, false),
         _popup(HKEY_CURRENT_USER, _make_app_reg_path(), TEXT("popup_enable"), false),
-        _system_popup0(HKEY_CURRENT_USER, TEXT("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced"), TEXT("EnableBallonTip"), false)//,
+        _system_popup0(HKEY_CURRENT_USER, TEXT("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced"), TEXT("EnableBallonTip"), false),
         //_system_popup1(HKEY_CURRENT_USER, TEXT("Software\\Microsoft\\Windows\\CurrentVersion\\PushNotifications"), TEXT("ToastEnabled"), false),
-        //_system_popup2(HKEY_CURRENT_USER, TEXT("Software\\Policies\\Microsoft\\Windows\\Explorer"), TEXT("DisableNotificationCenter"), false)
+        //_system_popup2(HKEY_CURRENT_USER, TEXT("Software\\Policies\\Microsoft\\Windows\\Explorer"), TEXT("DisableNotificationCenter"), false),
+        _lang(HKEY_CURRENT_USER, _make_app_reg_path(), TEXT("lang"), TEXT("")),
+        _system_lang(HKEY_LOCAL_MACHINE, TEXT("SYSTEM\\CurrentControlSet\\Control\\Nls\\Language"), TEXT("InstallLanguage"), TEXT(""))
     {
         RegistryValue registry_value;
         _fill_property_from_registry(_autorun, REG_SZ, true, false, _is_value_containing_app_path);
@@ -40,6 +43,8 @@ public:
         _fill_property_from_registry(_system_popup0, REG_DWORD, true, false, _is_value_true);
         //_fill_property_from_registry(_system_popup1, REG_DWORD, true, false, _is_value_true);
         //_fill_property_from_registry(_system_popup2, REG_DWORD, false, true, _is_value_true);
+        _fill_property_from_registry(_lang, REG_SZ, CString(TEXT("")));
+        _fill_property_from_registry(_system_lang, REG_SZ, CString(TEXT("0409")));
 
         if (force_popup_enable && _system_popup0.value && !TRegistry::is_path_valid(_popup.reg_section, _popup.reg_path))
         {
@@ -97,6 +102,23 @@ public:
         TRegistry::set_key_value(_system_popup0.reg_section, _system_popup0.reg_path, _system_popup0.reg_key, registry_value);
     }
 
+    inline UINT32 lang()
+    {
+        UINT32 lang = ::_tcstoul(_lang.value, NULL, 16);
+        if (lang)
+            return lang;
+
+        return ::_tcstoul(_system_lang.value, NULL, 16);
+    }
+
+    inline void lang(UINT32 value)
+    {
+        _lang.value.Format(TEXT("%04x"), value);
+
+        RegistryValue registry_value(_lang.value);
+        TRegistry::set_key_value(_lang.reg_section, _lang.reg_path, _lang.reg_key, registry_value);
+    }
+
 private:
     const CString _module_name;
 
@@ -105,6 +127,8 @@ private:
     Property<bool> _system_popup0;
     //Property<bool> _system_popup1;
     //Property<bool> _system_popup2;
+    Property<CString> _lang;
+    Property<CString> _system_lang;
 
     inline static CString _make_app_path()
     {
@@ -118,6 +142,19 @@ private:
         CString reg_path;
         reg_path.Format(TEXT("SOFTWARE\\%s"), _module_name);
         return reg_path;
+    }
+
+    template<class TProperty, class TValue>
+    inline static void _fill_property_from_registry(TProperty & prop, const DWORD expected_reg_type, const TValue & default_value)
+    {
+        RegistryValue registry_value(default_value);
+        if (TRegistry::get_key_value(prop.reg_section, prop.reg_path, prop.reg_key, registry_value))
+        {
+            if (registry_value.type() == expected_reg_type)
+            {
+                prop.value = registry_value.get<TValue>();
+            }
+        }
     }
 
     template<class TProperty, class TValue, class TCompareMethod>

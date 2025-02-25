@@ -1,5 +1,5 @@
-﻿#include "../src/stdafx.h"
-#include "../src/settings.h"
+﻿#include "stdafx.h"
+#include "settings.h"
 
 #define CATCH_CONFIG_NO_CPP11
 #include "catch.hpp"
@@ -20,6 +20,7 @@ struct TestRegistry1 : public TestRegistry
     static bool flag1;
     static bool flag2;
     static bool flag3;
+    static bool flag4;
 
     inline static bool get_key_value(const HKEY section, const TCHAR * path, const TCHAR * key, serial_notifier::RegistryValue & value)
     {
@@ -38,6 +39,16 @@ struct TestRegistry1 : public TestRegistry
         else if (!::lstrcmp(key, TEXT("EnableBallonTip")))
         {
             value = serial_notifier::RegistryValue(UINT32(1));
+            return true;
+        }
+        else if (!::lstrcmp(key, TEXT("lang")))
+        {
+            value = serial_notifier::RegistryValue(CString(TEXT("123a")));
+            return true;
+        }
+        else if (!::lstrcmp(key, TEXT("InstallLanguage")))
+        {
+            value = serial_notifier::RegistryValue(CString(TEXT("567b")));
             return true;
         }
         return false;
@@ -59,11 +70,21 @@ struct TestRegistry1 : public TestRegistry
                 flag3 = true;
             return true;
         }
+        else if (!::lstrcmp(key, TEXT("lang")))
+        {
+            CString a = value.get<CString>();
+            CString b = CString(TEXT("a321"));
+            if (a == b)
+                flag4 = true;
+            return true;
+        }
         return false;
     }
 
     inline static bool is_path_valid(const HKEY section, const TCHAR * path)
     {
+        (void)section;
+        (void)path;
         return false;
     }
 
@@ -83,19 +104,25 @@ struct TestRegistry1 : public TestRegistry
 bool TestRegistry1::flag1 = false;
 bool TestRegistry1::flag2 = false;
 bool TestRegistry1::flag3 = false;
+bool TestRegistry1::flag4 = false;
 
 struct TestRegistry2 : public TestRegistry
 {
     static bool flag1;
     static bool flag2;
     static bool flag3;
+    static bool flag4;
 
     inline static bool get_key_value(const HKEY section, const TCHAR * path, const TCHAR * key, serial_notifier::RegistryValue & value)
     {
         (void)section;
         (void)path;
-        (void)key;
-        (void)value;
+
+        if (!::lstrcmp(key, TEXT("InstallLanguage")))
+        {
+            value = serial_notifier::RegistryValue(CString(TEXT("567b")));
+            return true;
+        }
         return false;
     }
 
@@ -121,6 +148,14 @@ struct TestRegistry2 : public TestRegistry
                 flag3 = true;
             return true;
         }
+        else if (!::lstrcmp(key, TEXT("lang")))
+        {
+            CString a = value.get<CString>();
+            CString b = CString(TEXT("a321"));
+            if (a == b)
+                flag4 = true;
+            return true;
+        }
         return false;
     }
 
@@ -135,6 +170,8 @@ struct TestRegistry2 : public TestRegistry
 
     inline static bool is_path_valid(const HKEY section, const TCHAR * path)
     {
+        (void)section;
+        (void)path;
         return false;
     }
 };
@@ -142,6 +179,7 @@ struct TestRegistry2 : public TestRegistry
 bool TestRegistry2::flag1 = false;
 bool TestRegistry2::flag2 = false;
 bool TestRegistry2::flag3 = false;
+bool TestRegistry2::flag4 = false;
 
 struct TestRegistry3 : public TestRegistry
 {
@@ -186,6 +224,9 @@ struct TestRegistry3 : public TestRegistry
 
     inline static bool is_path_valid(const HKEY section, const TCHAR * path)
     {
+        (void)section;
+        (void)path;
+
         return false;
     }
 };
@@ -208,15 +249,17 @@ TEST_CASE("Testing settings for all flags are true", "[settings]")
     REQUIRE(settings.popup());
     REQUIRE(settings.autorun());
     REQUIRE(settings.system_popup());
+    REQUIRE(settings.lang() == 0x123a);
 
     settings.autorun(false);
     settings.popup(false);
     settings.system_popup(false);
-
+    settings.lang(0xa321);
 
     REQUIRE(TestRegistry1::flag1);
     REQUIRE(TestRegistry1::flag2);
     REQUIRE(TestRegistry1::flag3);
+    REQUIRE(TestRegistry1::flag4);
 }
 
 TEST_CASE("Testing settings for all flags are false", "[settings]")
@@ -226,15 +269,17 @@ TEST_CASE("Testing settings for all flags are false", "[settings]")
     REQUIRE_FALSE(settings.popup());
     REQUIRE_FALSE(settings.autorun());
     REQUIRE_FALSE(settings.system_popup());
+    REQUIRE(settings.lang() == 0x567b);
 
     settings.autorun(true);
     settings.popup(true);
     settings.system_popup(true);
-
+    settings.lang(0xa321);
 
     REQUIRE(TestRegistry2::flag1);
     REQUIRE(TestRegistry2::flag2);
     REQUIRE(TestRegistry2::flag3);
+    REQUIRE(TestRegistry1::flag4);
 }
 
 TEST_CASE("Testing settings force popup setting up", "[settings]")

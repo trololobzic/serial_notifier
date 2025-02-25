@@ -22,11 +22,12 @@ if (NOT MFC_FOUND)
   message(FATAL_ERROR "MFC Could not be found during the MFC test")
 endif()
 
-file(GLOB_RECURSE SRCS "src/*.cpp")
-file(GLOB_RECURSE HEARDERS "src/*.h")
-file(GLOB_RECURSE RESOURSES "src/*.rc" "src/*.rc2")
-list(APPEND include_path "${CMAKE_CURRENT_SOURCE_DIR}/src/lang"
-						 "${CMAKE_CURRENT_SOURCE_DIR}/src/registry")
+file(GLOB_RECURSE SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
+file(GLOB_RECURSE HEARDERS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h")
+file(GLOB_RECURSE RESOURSES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.rc" "src/*.rc2")
+list(APPEND include_path "${CMAKE_CURRENT_SOURCE_DIR}/src"
+                         "${CMAKE_CURRENT_SOURCE_DIR}/src/lang"
+                         "${CMAKE_CURRENT_SOURCE_DIR}/src/registry")
 
 if("${CMAKE_MFC_FLAG}" STREQUAL "1")
   msvc_link_to_static_crt()
@@ -51,7 +52,10 @@ add_definitions(-D_UNICODE)
 
 #Tests project in the same solution
 set(TESTS_PROJECT_NAME "${PROJECT_NAME}_tests")
-file(GLOB_RECURSE TESTS_SRC "tests/*.cpp" "tests/*.h" "tests/*.hpp")
+file(GLOB_RECURSE TESTS_SRC "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp"
+                            "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.h"
+                            "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.hpp"
+                            "${CMAKE_CURRENT_SOURCE_DIR}/src/lang/lang.cpp")
 create_directories_structure(tests "Tests")
 add_executable(${TESTS_PROJECT_NAME} EXCLUDE_FROM_ALL ${TESTS_SRC})
 set_include_path("${TESTS_PROJECT_NAME}" "${include_path}")

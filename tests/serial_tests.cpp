@@ -1,5 +1,5 @@
-﻿#include "../src/stdafx.h"
-#include "../src/serial.h"
+﻿#include "stdafx.h"
+#include "serial.h"
 
 
 #define CATCH_CONFIG_NO_CPP11
