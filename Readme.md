@@ -10,6 +10,11 @@ A small C++98 project used Microsoft Foundation Classes (MFC) library for Window
 ## About
 The application can automatically start when the system starts and monitor connections and disconnections of serial ports. If you use interface converters such as USB - RS232, USB - RS485 or other devices that create new COM ports in your system, the application will notify you of the name of the newly connected device. Now you do not need to run the "Device Manager" to find out which serial port was created. All you need to do is place the executable file in the right place and run it.
 
+## Multilanguage support
+The application supports multilanguage interface. On first start it try to autodetect system language and apply that but you can choose interface language manually.
+
+![serial_notifier2](https://github.com/user-attachments/assets/d18c5b21-fc44-4a8b-82cc-18a9dc975244)
+
 ## Backward compatibility
 The application does not use modern C++ standards such as C++11 and above, because the developer's goal was to maintain backward compatibility with legacy operating systems such as Windows XP and Windows 7. These systems are currently not supported, but are still used in industrial computers to this day.
 Unfortunately, the developer has not found a way to correctly compile C++11 and above code for Windows XP at this time, so the C++98 standard was chosen to write the application.
