@@ -31,7 +31,7 @@ template<>
             popup_messages.unplugged_plural = TEXT("Deaktiviert");
 
             question_enable_sys_popup = TEXT("Popup-Nachrichten sind im System deaktiviert. Anmachen?");
-            serial_info = TEXT("Hafen: %s\nName: %s\Beschreibung: %s");
+            serial_info = TEXT("Hafen: %s\nName: %s\nBeschreibung: %s");
         }
     };
 
