@@ -1,2 +1,5 @@
 According to https://stackoverflow.com/questions/71281527/changing-resource-encoding-from-windows-1252-to-unicode-utf-8-with-signatures
 all *.cpp and *.h files should have UTF-8BOM codepage, but all *.rc files should have UTF-8 codepage and contain #pragma code_page(65001)
+
+Popup notifications was made according Microsoft examples:
+https://github.com/microsoft/Windows-classic-samples/tree/main/Samples/Win7Samples/winui/shell/appshellintegration/NotificationIcon
