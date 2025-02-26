@@ -31,7 +31,7 @@ template<>
             popup_messages.unplugged_plural = TEXT("Desactivado");
 
             question_enable_sys_popup = TEXT("Los mensajes emergentes están deshabilitados en el sistema. ¿Encender?");
-            serial_info = TEXT("Puerto: %s\nNombre: %s\Descripción: %s");
+            serial_info = TEXT("Puerto: %s\nNombre: %s\nDescripción: %s");
         }
     };
 
