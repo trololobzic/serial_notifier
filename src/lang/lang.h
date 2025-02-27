@@ -33,7 +33,7 @@ namespace lang
 
     struct TranslationBase
     {
-        TranslationBase(CString & lang_name, const SupportedLanguagesEnum supported_lang_idx, bool default_lang = false) :
+        TranslationBase(const CString & lang_name, const SupportedLanguagesEnum supported_lang_idx, bool default_lang = false) :
             lang_name(lang_name),
             _supported_lang_idx(supported_lang_idx),
             _default_lang(default_lang)
