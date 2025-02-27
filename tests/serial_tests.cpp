@@ -22,7 +22,6 @@ struct TestRegistrySerialList1
         result.at(2) = serial_notifier::RegistryEntry(CString(TEXT("/dev/ttyS10")), CString(TEXT("COM10")));
         result.at(3) = serial_notifier::RegistryEntry(CString(TEXT("/dev/ttyS1")), CString(TEXT("COM1")));
         result.at(4) = serial_notifier::RegistryEntry(CString(TEXT("/dev/ttyS12")), CString(TEXT("COM12")));
-
         return true;
     }
 };
