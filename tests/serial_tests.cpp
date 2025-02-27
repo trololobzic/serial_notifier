@@ -108,7 +108,7 @@ TEST_CASE("Checking read_serial_list()", "[serial]")
 //    Serial::setup_descriptions(serial_list);
 
 //    CHECK(serial_list.at(0).description.GetLength());
-}
+//}
 
 TEST_CASE("Checking get_difference() - plugging devices", "[serial]")
 {
