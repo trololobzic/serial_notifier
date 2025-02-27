@@ -219,10 +219,10 @@ VOID CSerialNotifierDlg::CreateMenu()
 
         if ((*it) == _translation_ptr)
         {
-            _languages_submenu.CheckMenuItem(WM_POPUP_LANGS_LIST + idx, MF_CHECKED);
+            _languages_submenu.CheckMenuItem(WM_POPUP_LANGS_LIST + static_cast<DWORD>(idx), MF_CHECKED);
         }
     }
-    _menu.InsertMenu(1, MF_POPUP | MF_STRING| MF_BYPOSITION, (UINT)_languages_submenu.m_hMenu,  _translation_ptr->menu_items.languages);
+    _menu.InsertMenu(1, MF_POPUP | MF_STRING| MF_BYPOSITION, reinterpret_cast<UINT_PTR>(_languages_submenu.m_hMenu),  _translation_ptr->menu_items.languages);
 }
 
 void CSerialNotifierDlg::DestroyMenu()
@@ -242,7 +242,7 @@ void CSerialNotifierDlg::CreateDevicesSubMenu()
     for(Serial::SerialList::iterator it = serial_list.begin(); it != serial_list.end(); it++)
     {
         CString next_item_string;
-        next_item_string.Format(TEXT("%-7s  "), it->device_name);
+        next_item_string.Format(TEXT("%-7s  "), it->device_name.GetString());
         next_item_string += it->description.GetLength() ? it->description : CString(TEXT("\"")) + it->friendly_name + CString(TEXT("\""));
         _devices_submenu.AppendMenu(MF_STRING , WM_POPUP_SERIAL_LIST + std::distance(serial_list.begin(), it), next_item_string.GetString());
     }
@@ -252,7 +252,7 @@ void CSerialNotifierDlg::CreateDevicesSubMenu()
         _devices_submenu.AppendMenu(MF_STRING | MF_GRAYED, WM_POPUP_SERIAL_LIST , _translation_ptr->menu_items.none);
     }
 
-    _menu.InsertMenu(0, MF_POPUP | MF_STRING| MF_BYPOSITION, (UINT)_devices_submenu.m_hMenu,  _translation_ptr->menu_items.devices);
+    _menu.InsertMenu(0, MF_POPUP | MF_STRING| MF_BYPOSITION, reinterpret_cast<UINT_PTR>(_devices_submenu.m_hMenu),  _translation_ptr->menu_items.devices);
 }
 
 void CSerialNotifierDlg::DestroyDevicesSubMenu()
@@ -372,7 +372,7 @@ LRESULT CSerialNotifierDlg::OnChoiceMenuItemSerialList(WPARAM wp, LPARAM lp)
 
     MessageBoxData * mesage_box_data = new MessageBoxData;
     mesage_box_data->title.Format(_translation_ptr->app_name);
-    mesage_box_data->text.Format(_translation_ptr->serial_info, device.device_name, device.friendly_name, device.description);
+    mesage_box_data->text.Format(_translation_ptr->serial_info, device.device_name.GetString(), device.friendly_name.GetString(), device.description.GetString());
     mesage_box_data->flags = MB_OK | MB_ICONINFORMATION;
 
     AfxBeginThread(ShowMessageBox, mesage_box_data);
