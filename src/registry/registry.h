@@ -79,7 +79,7 @@ public:
 
                 //get value type and value size. Not read value yet
                 DWORD value_type, value_size;
-                LSTATUS error_code = ::RegQueryValueEx(registry_section(), key, NULL, &value_type, NULL, &value_size);
+                error_code = ::RegQueryValueEx(registry_section(), key, NULL, &value_type, NULL, &value_size);
                 if (error_code != ERROR_SUCCESS)
                 {
                     throw Exception();
