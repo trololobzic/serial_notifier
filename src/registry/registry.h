@@ -111,7 +111,7 @@ public:
         try
         {
             RegistrySectionForceCreate registry_section(section, path, RegistrySectionForceCreate::AR_Write);
-            LSTATUS error_code = ::RegSetValueEx(registry_section(), key, 0, value.type(), value(), value.size());
+            LSTATUS error_code = ::RegSetValueEx(registry_section(), key, 0, value.type(), value(), static_cast<DWORD>(value.size()));
             if (error_code != ERROR_SUCCESS)
                 throw Exception();
 
