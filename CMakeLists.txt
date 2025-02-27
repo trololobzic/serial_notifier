@@ -6,6 +6,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/macro.cmake)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 project(serial_notifier)
+option(SKIP_TESTS "Skip building and execution tests. Use -DSKIP_TESTS=<value> on configuration step" OFF)
 set(CMAKE_MFC_FLAG 1)
 #set warning level
 force_set_flags(CMAKE_CXX_FLAGS "/W[0-4]" "/W4")
@@ -51,12 +52,18 @@ add_definitions(-D_UNICODE)
 
 
 #Tests project in the same solution
-set(TESTS_PROJECT_NAME "${PROJECT_NAME}_tests")
-file(GLOB_RECURSE TESTS_SRC "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp"
-                            "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.h"
-                            "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.hpp"
-                            "${CMAKE_CURRENT_SOURCE_DIR}/src/lang/lang.cpp")
-create_directories_structure(tests "Tests")
-add_executable(${TESTS_PROJECT_NAME} EXCLUDE_FROM_ALL ${TESTS_SRC})
-set_include_path("${TESTS_PROJECT_NAME}" "${include_path}")
-add_dependencies(${PROJECT_NAME} ${TESTS_PROJECT_NAME})
+if ("${SKIP_TESTS}" STREQUAL "OFF")
+  set(TESTS_PROJECT_NAME "${PROJECT_NAME}_tests")
+  file(GLOB_RECURSE TESTS_SRC "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp"
+                              "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.h"
+                              "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.hpp"
+                              "${CMAKE_CURRENT_SOURCE_DIR}/src/lang/lang.cpp")
+  create_directories_structure(tests "Tests")
+  add_executable(${TESTS_PROJECT_NAME} EXCLUDE_FROM_ALL ${TESTS_SRC})
+  set_include_path("${TESTS_PROJECT_NAME}" "${include_path}")
+  add_dependencies(${PROJECT_NAME} ${TESTS_PROJECT_NAME})
+
+  add_custom_command(TARGET ${TESTS_PROJECT_NAME} POST_BUILD 
+                     COMMAND "${CMAKE_CURRENT_BINARY_DIR}/$<IF:$<CONFIG:Release>,Release,Debug>/${TESTS_PROJECT_NAME}"
+                     COMMENT "Starting tests")
+endif()
