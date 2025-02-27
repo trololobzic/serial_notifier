@@ -28,11 +28,13 @@ namespace lang
         static TranslationsList::iterator _find_translation_by_supported_lang_idx(const SupportedLanguagesEnum supported_lang_idx);
         static TranslationsList::iterator _find_related_translation(const SupportedLanguagesEnum supported_lang_idx);
         static TranslationsList::iterator _find_default_translation();
+        static bool compare_translation_ptrs(const TranslationBase *, const TranslationBase *);
     };
 
     struct TranslationBase
     {
-        TranslationBase(const SupportedLanguagesEnum supported_lang_idx, bool default_lang = false) :
+        TranslationBase(CString & lang_name, const SupportedLanguagesEnum supported_lang_idx, bool default_lang = false) :
+            lang_name(lang_name),
             _supported_lang_idx(supported_lang_idx),
             _default_lang(default_lang)
 

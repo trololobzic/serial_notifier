@@ -12,12 +12,11 @@ template<>
     struct Translation<LANG, TranslationBase> : public TranslationBase
     {
         Translation() :
-            TranslationBase(LANG, true)
+            TranslationBase(CString(TEXT("Deutsch")), LANG)
 
         {
             app_name = TEXT("Überwachung serieller Schnittstellen");
-            lang_name = TEXT("Deutsch");
-
+ 
             menu_items.languages = TEXT("Sprache");
             menu_items.devices = TEXT("Geräte");
             menu_items.autorun = TEXT("Autostart");

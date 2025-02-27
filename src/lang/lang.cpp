@@ -10,7 +10,7 @@ namespace lang
     void Lang::register_translation(const TranslationBase * lang_ptr)
     {
         _translations.push_back(lang_ptr);
-        std::sort(_translations.begin(), _translations.end());
+        std::sort(_translations.begin(), _translations.end(), compare_translation_ptrs);
     }
 
     void Lang::unregister_translation(const TranslationBase * lang_ptr)
@@ -77,6 +77,11 @@ namespace lang
     const Lang::TranslationsList & Lang::get_all_translations_list()
     {
         return _translations;
+    }
+
+    bool Lang::compare_translation_ptrs(const TranslationBase * a, const TranslationBase * b)
+    {
+        return (*a) < (*b);
     }
 
 }
