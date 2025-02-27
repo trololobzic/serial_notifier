@@ -160,25 +160,26 @@ TEST_CASE("Checking path validation", "[registry]")
     REQUIRE(serial_notifier::Registry::is_path_valid(HKEY_LOCAL_MACHINE, TEXT("HARDWARE\\DEVICEMAP")));
 }
 
-TEST_CASE("Checking key validation", "[registry]")
-{
-    REQUIRE_FALSE(serial_notifier::Registry::is_key_present(HKEY_LOCAL_MACHINE, TEXT("SOFTWARE\\Microsoft\\Windows\\CurrentVersion"), TEXT("Abracadabra")));
-    REQUIRE_FALSE(serial_notifier::Registry::is_key_present(HKEY_CURRENT_USER, TEXT("Control Panel\\Mouse"), TEXT("Abracadabra")));
-    REQUIRE(serial_notifier::Registry::is_key_present(HKEY_LOCAL_MACHINE, TEXT("SOFTWARE\\Microsoft\\Windows\\CurrentVersion"), TEXT("ProductId")));
-    REQUIRE(serial_notifier::Registry::is_key_present(HKEY_CURRENT_USER, TEXT("Control Panel\\Mouse"), TEXT("MouseSpeed")));
-}
-
-TEST_CASE("Ckeck read/write/delete from reg", "[registry]")
+TEST_CASE("Checking validation/read/write/delete from reg", "[registry]")
 {
     CString reg_test_path = make_test_reg_path();
 
     serial_notifier::RegistryValue reg_value1(UINT32(123)), reg_value2(TEXT("123")), reg_value3, reg_value4;
-    serial_notifier::RegistryValue ;
 
+    REQUIRE_FALSE(serial_notifier::Registry::is_key_present(HKEY_CURRENT_USER, reg_test_path, TEXT("test_key_1")));
+    REQUIRE_FALSE(serial_notifier::Registry::is_key_present(HKEY_CURRENT_USER, reg_test_path, TEXT("test_key_2")));
+    REQUIRE_FALSE(serial_notifier::Registry::is_key_present(HKEY_CURRENT_USER, reg_test_path + CString(TEXT("\\sub_key")), TEXT("test_key_1")));
+    REQUIRE_FALSE(serial_notifier::Registry::is_key_present(HKEY_CURRENT_USER, reg_test_path + CString(TEXT("\\sub_key_12\\sub_key_abracadabra")), TEXT("test_key_1")));
+    
     REQUIRE(serial_notifier::Registry::set_key_value(HKEY_CURRENT_USER, reg_test_path, TEXT("test_key_1"), reg_value1));
     REQUIRE(serial_notifier::Registry::set_key_value(HKEY_CURRENT_USER, reg_test_path, TEXT("test_key_2"), reg_value2));
     REQUIRE(serial_notifier::Registry::set_key_value(HKEY_CURRENT_USER, reg_test_path + CString(TEXT("\\sub_key")), TEXT("test_key_1"), reg_value1));
     REQUIRE(serial_notifier::Registry::set_key_value(HKEY_CURRENT_USER, reg_test_path + CString(TEXT("\\sub_key_12\\sub_key_abracadabra")), TEXT("test_key_1"), reg_value1));
+
+    REQUIRE(serial_notifier::Registry::is_key_present(HKEY_CURRENT_USER, reg_test_path, TEXT("test_key_1")));
+    REQUIRE(serial_notifier::Registry::is_key_present(HKEY_CURRENT_USER, reg_test_path, TEXT("test_key_2")));
+    REQUIRE(serial_notifier::Registry::is_key_present(HKEY_CURRENT_USER, reg_test_path + CString(TEXT("\\sub_key")), TEXT("test_key_1")));
+    REQUIRE(serial_notifier::Registry::is_key_present(HKEY_CURRENT_USER, reg_test_path + CString(TEXT("\\sub_key_12\\sub_key_abracadabra")), TEXT("test_key_1")));
 
     REQUIRE(serial_notifier::Registry::get_key_value(HKEY_CURRENT_USER, reg_test_path, TEXT("test_key_1"), reg_value3));
     REQUIRE(serial_notifier::Registry::get_key_value(HKEY_CURRENT_USER, reg_test_path, TEXT("test_key_2"), reg_value4));
@@ -194,6 +195,10 @@ TEST_CASE("Ckeck read/write/delete from reg", "[registry]")
 
     REQUIRE(serial_notifier::Registry::delete_path(HKEY_CURRENT_USER, reg_test_path) == true);
     REQUIRE_FALSE(serial_notifier::Registry::is_path_valid(HKEY_LOCAL_MACHINE, reg_test_path));
+    REQUIRE_FALSE(serial_notifier::Registry::is_key_present(HKEY_CURRENT_USER, reg_test_path, TEXT("test_key_1")));
+    REQUIRE_FALSE(serial_notifier::Registry::is_key_present(HKEY_CURRENT_USER, reg_test_path, TEXT("test_key_2")));
+    REQUIRE_FALSE(serial_notifier::Registry::is_key_present(HKEY_CURRENT_USER, reg_test_path + CString(TEXT("\\sub_key")), TEXT("test_key_1")));
+    REQUIRE_FALSE(serial_notifier::Registry::is_key_present(HKEY_CURRENT_USER, reg_test_path + CString(TEXT("\\sub_key_12\\sub_key_abracadabra")), TEXT("test_key_1")));
 }
 
 TEST_CASE("Check blocking_wait_for_changing() for adding key", "[registry]")
