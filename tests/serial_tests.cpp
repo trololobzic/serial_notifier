@@ -22,7 +22,6 @@ struct TestRegistrySerialList1
         result.at(2) = serial_notifier::RegistryEntry(CString(TEXT("/dev/ttyS10")), CString(TEXT("COM10")));
         result.at(3) = serial_notifier::RegistryEntry(CString(TEXT("/dev/ttyS1")), CString(TEXT("COM1")));
         result.at(4) = serial_notifier::RegistryEntry(CString(TEXT("/dev/ttyS12")), CString(TEXT("COM12")));
-
         return true;
     }
 };
@@ -94,22 +93,22 @@ TEST_CASE("Checking read_serial_list()", "[serial]")
     REQUIRE(::lstrcmp(serial_list.at(4).friendly_name, TEXT("/dev/ttyS12")) == 0);
 }
 
-TEST_CASE("Checking setup_descriptions()", "[serial]")
-{
-    typedef serial_notifier::Serial<TestRegistrySerialList1> Serial;
+//disable this test case due it machine depends and also
+//language settings depends
+//
+//TEST_CASE("Checking setup_descriptions()", "[serial]")
+//{
+//    typedef serial_notifier::Serial<TestRegistrySerialList1> Serial;
 
-    Serial::SerialList serial_list;
-    serial_list.resize(1);
-    serial_list.at(0).device_name = TEXT("COM4");
-    serial_list.at(0).friendly_name = TEXT("\\Device\\Serial0");
+//    Serial::SerialList serial_list;
+//    serial_list.resize(1);
+//    serial_list.at(0).device_name = TEXT("COM4");
+//    serial_list.at(0).friendly_name = TEXT("\\Device\\Serial0");
+//
+//    Serial::setup_descriptions(serial_list);
 
-    Serial::setup_descriptions(serial_list);
-
-    //Result of setup_descriptions() depends of local machine language settings.
-    //It can be "Serial port" or "Последовательный порт" for example.
-    //So this test case check only description is not empty.
-    CHECK(serial_list.at(0).description.GetLength());
-}
+//    CHECK(serial_list.at(0).description.GetLength());
+//}
 
 TEST_CASE("Checking get_difference() - plugging devices", "[serial]")
 {

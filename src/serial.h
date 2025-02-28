@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <iterator>
 #include <setupapi.h>
 #include <initguid.h>
 #include <devguid.h>

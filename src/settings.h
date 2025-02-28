@@ -140,7 +140,7 @@ private:
     inline CString _make_app_reg_path()
     {
         CString reg_path;
-        reg_path.Format(TEXT("SOFTWARE\\%s"), _module_name);
+        reg_path.Format(TEXT("SOFTWARE\\%s"), _module_name.GetString());
         return reg_path;
     }
 

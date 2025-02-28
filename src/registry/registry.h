@@ -22,8 +22,8 @@ public:
 
             DWORD value_type, value_size;
             //get value type and value size. Not read value yet
-            LSTATUS err_code = ::RegQueryValueEx(registry_section(), key, NULL, &value_type, NULL, &value_size);
-            if (err_code != ERROR_SUCCESS)
+            LSTATUS error_code = ::RegQueryValueEx(registry_section(), key, NULL, &value_type, NULL, &value_size);
+            if (error_code != ERROR_SUCCESS)
             {
                 throw Exception();
             }
@@ -32,8 +32,8 @@ public:
             value.resize(value_size);
 
             //get value
-            err_code = ::RegQueryValueEx(registry_section(), key, NULL, NULL, &value._data[0], &value_size);
-            if (err_code != ERROR_SUCCESS)
+            error_code = ::RegQueryValueEx(registry_section(), key, NULL, NULL, &value._data[0], &value_size);
+            if (error_code != ERROR_SUCCESS)
             {
                 throw Exception();
             }
@@ -57,8 +57,8 @@ public:
             RegistrySection registry_section(section, path);
 
             DWORD keys_number = 0;
-            LSTATUS err_code = RegQueryInfoKey(registry_section(), NULL, NULL, NULL, NULL, NULL, NULL, &keys_number, NULL, NULL, NULL, NULL);
-            if (err_code != ERROR_SUCCESS)
+            LSTATUS error_code = RegQueryInfoKey(registry_section(), NULL, NULL, NULL, NULL, NULL, NULL, &keys_number, NULL, NULL, NULL, NULL);
+            if (error_code != ERROR_SUCCESS)
             {
                 throw Exception();
             }
@@ -69,8 +69,8 @@ public:
                 DWORD key_length = max_value_length;
 
 
-                err_code = ::RegEnumValue(registry_section(), key_idx, key, &key_length, NULL, NULL, NULL, NULL);
-                if (err_code != ERROR_SUCCESS)
+                error_code = ::RegEnumValue(registry_section(), key_idx, key, &key_length, NULL, NULL, NULL, NULL);
+                if (error_code != ERROR_SUCCESS)
                 {
                     throw Exception();
                 }
@@ -79,8 +79,8 @@ public:
 
                 //get value type and value size. Not read value yet
                 DWORD value_type, value_size;
-                LSTATUS err_code = ::RegQueryValueEx(registry_section(), key, NULL, &value_type, NULL, &value_size);
-                if (err_code != ERROR_SUCCESS)
+                error_code = ::RegQueryValueEx(registry_section(), key, NULL, &value_type, NULL, &value_size);
+                if (error_code != ERROR_SUCCESS)
                 {
                     throw Exception();
                 }
@@ -90,8 +90,8 @@ public:
                 entry.resize(value_size);
 
                 //get value
-                err_code = ::RegQueryValueEx(registry_section(), key, NULL, NULL, &entry._data[0], &value_size);
-                if (err_code != ERROR_SUCCESS)
+                error_code = ::RegQueryValueEx(registry_section(), key, NULL, NULL, &entry._data[0], &value_size);
+                if (error_code != ERROR_SUCCESS)
                 {
                     throw Exception();
                 }
@@ -111,8 +111,8 @@ public:
         try
         {
             RegistrySectionForceCreate registry_section(section, path, RegistrySectionForceCreate::AR_Write);
-            LSTATUS err_code = ::RegSetValueEx(registry_section(), key, 0, value.type(), value(), value.size());
-            if (err_code != ERROR_SUCCESS)
+            LSTATUS error_code = ::RegSetValueEx(registry_section(), key, 0, value.type(), value(), static_cast<DWORD>(value.size()));
+            if (error_code != ERROR_SUCCESS)
                 throw Exception();
 
             return true;
@@ -142,8 +142,8 @@ public:
         {
             RegistrySection registry_section(section, path);
             DWORD value_type, value_size;
-            LSTATUS err_code = ::RegQueryValueEx(registry_section(), key, NULL, &value_type, NULL, &value_size);
-            if (err_code != ERROR_SUCCESS)
+            LSTATUS error_code = ::RegQueryValueEx(registry_section(), key, NULL, &value_type, NULL, &value_size);
+            if (error_code != ERROR_SUCCESS)
                 throw Exception();
 
             return true;
@@ -185,15 +185,15 @@ public:
 
     inline static bool delete_path(const HKEY section, const TCHAR * path)
     {
-        LSTATUS err_code = ERROR_SUCCESS;
+        LSTATUS error_code = ERROR_SUCCESS;
         try
         {
             RegistrySection registry_section(section, path);
 
             DWORD sub_keys_total;
-            err_code = RegQueryInfoKey(registry_section(), NULL, NULL, NULL, &sub_keys_total, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+            error_code = RegQueryInfoKey(registry_section(), NULL, NULL, NULL, &sub_keys_total, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
-            if (err_code != ERROR_SUCCESS)
+            if (error_code != ERROR_SUCCESS)
                 throw Exception();
 
             if (sub_keys_total)
@@ -215,8 +215,8 @@ public:
                 }
             }
 
-            err_code = ::RegDeleteKey(section, path);
-            if (err_code != ERROR_SUCCESS)
+            error_code = ::RegDeleteKey(section, path);
+            if (error_code != ERROR_SUCCESS)
                 throw Exception();
 
             return true;
