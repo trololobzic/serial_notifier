@@ -11,7 +11,7 @@ env:
 
 jobs:
   build:
-    runs-on: windows-2019
+    runs-on: windows-2025 #possible variants: windows-2019, windows-2022, windows-2025(windows-latest)
 
     steps:
     - uses: actions/checkout@v4
@@ -32,4 +32,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: serial_notifier.exe
-        path: ${{github.workspace}}/build/${{env.BUILD_TYPE}}/serial_notifier.exe
+        path: ${{github.workspace}}/build/${{env.BUILD_TYPE}}/*.exe
