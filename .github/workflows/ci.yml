@@ -1,4 +1,4 @@
-name: Build and Test
+name: CI
 
 on:
   push:
@@ -27,3 +27,9 @@ jobs:
 
     - name: Test
       run: ${{github.workspace}}/build/${{env.BUILD_TYPE}}/serial_notifier_tests.exe
+
+    - name: Archive production artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: serial_notifier.exe
+        path: ${{github.workspace}}/build/${{env.BUILD_TYPE}}/serial_notifier.exe
