@@ -307,7 +307,7 @@ LRESULT CSerialNotifierDlg::OnTrayIconEvent(WPARAM wp, LPARAM lp)
 
     TRACE_OUTPUT(TEXT("%s try to handle event [0x%04X]. There are handlers for [0x%04X] and [0x%04X]"), TEXT(__FUNCTION__), lp, WM_LBUTTONDOWN, WM_RBUTTONDOWN);
 
-    if (lp != WM_LBUTTONDOWN && lp != WM_RBUTTONDOWN)
+    if ((lp & 0xFFFF) != WM_LBUTTONDOWN && (lp & 0xFFFF) != WM_RBUTTONDOWN)
         return NULL;
 
     POINT cp;
