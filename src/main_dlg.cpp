@@ -158,9 +158,10 @@ BOOL CSerialNotifierDlg::CreateTrayIcon()
         return FALSE;
     }
 
-    BOOL ret = Shell_NotifyIcon(NIM_SETVERSION, &_notify_icon_data);
-    TRACE_OUTPUT(TEXT("%s res [%u]"), TEXT(__FUNCTION__), ret);
-    return ret;
+    //BOOL ret = Shell_NotifyIcon(NIM_SETVERSION, &_notify_icon_data);
+    //TRACE_OUTPUT(TEXT("%s res [%u]"), TEXT(__FUNCTION__), ret);
+    //return ret;
+    return TRUE;
 }
 
 BOOL CSerialNotifierDlg::DestroyTrayIcon()
@@ -250,9 +251,11 @@ VOID CSerialNotifierDlg::CreateMenu()
 
     typedef serial_notifier::lang::Lang Lang;
     const Lang::TranslationsList & translations_list = Lang::get_all_translations_list();
+    TRACE_OUTPUT(TEXT("%s [%u] translations ate available"), TEXT(__FUNCTION__), translations_list.size());
     _languages_submenu.CreatePopupMenu();
     for(Lang::TranslationsList::const_iterator it = translations_list.begin(); it != translations_list.end(); it++)
     {
+        TRACE_OUTPUT(TEXT("%s append translation [%s]"), TEXT(__FUNCTION__), (*it)->lang_name.GetString());
         CString next_item_string = (*it)->lang_name;
         size_t idx = std::distance(translations_list.begin(), it);
         _languages_submenu.AppendMenu(MF_STRING , WM_POPUP_LANGS_LIST + idx, next_item_string);
@@ -305,9 +308,8 @@ LRESULT CSerialNotifierDlg::OnTrayIconEvent(WPARAM wp, LPARAM lp)
 {
     (void)wp;
 
-    TRACE_OUTPUT(TEXT("%s try to handle event [0x%04X]. There are handlers for [0x%04X] and [0x%04X]"), TEXT(__FUNCTION__), lp, WM_LBUTTONDOWN, WM_RBUTTONDOWN);
-
-    if ((lp & 0xFFFF) != WM_LBUTTONDOWN && (lp & 0xFFFF) != WM_RBUTTONDOWN)
+    UINT16 event_idx = static_cast<UINT16>(lp);
+    if (event_idx != WM_LBUTTONDOWN && event_idx != WM_RBUTTONDOWN)
         return NULL;
 
     POINT cp;
