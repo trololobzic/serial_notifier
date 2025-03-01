@@ -1,9 +1,11 @@
 ﻿#pragma once
+#include <ctime>
 #include <windows.h>
 #include <vector>
 #include <algorithm>
 #include <strsafe.h>
 #include "lang.h"
+#include "afxwin.h"
 
 typedef serial_notifier::Settings<serial_notifier::Registry> Settings;
 typedef serial_notifier::Serial<serial_notifier::Registry> Serial;
@@ -42,6 +44,7 @@ protected:
     Settings&      _settings;
     Serial&        _serial;
     serial_notifier::lang::TranslationBase const * _translation_ptr;
+    CEdit _trace_cedit;
 
     struct MessageBoxData
     {
@@ -78,6 +81,9 @@ protected:
     LRESULT OnChangedSerialList(WPARAM wp, LPARAM lp);
 
     CString MakeBalloonMessage(const Serial::SerialList & serial_list, const CString & singular_prefix, const CString & plural_prefix);
+    #ifdef DEBUG
+    void trace_output(LPCTSTR format_str, ...);
+    #endif
 
 
 protected:
