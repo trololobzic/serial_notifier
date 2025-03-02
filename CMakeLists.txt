@@ -28,6 +28,7 @@ file(GLOB_RECURSE HEARDERS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h" "${CMAKE_CURREN
 file(GLOB_RECURSE RESOURSES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.rc" "${CMAKE_CURRENT_SOURCE_DIR}/src/*.rc2")
 list(APPEND include_path "${CMAKE_CURRENT_SOURCE_DIR}/src"
                          "${CMAKE_CURRENT_SOURCE_DIR}/src/lang"
+						 "${CMAKE_CURRENT_SOURCE_DIR}/src/lang/translations"
                          "${CMAKE_CURRENT_SOURCE_DIR}/src/registry")
 
 if("${CMAKE_MFC_FLAG}" STREQUAL "1")
