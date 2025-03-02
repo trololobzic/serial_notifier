@@ -16,8 +16,8 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v2
+    #- name: Add MSBuild to PATH
+    #  uses: microsoft/setup-msbuild@v2
 
     - name: Configure CMake
       run: cmake -B ${{github.workspace}}/build -A Win32 -DSKIP_TESTS=ON
