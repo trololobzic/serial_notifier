@@ -68,11 +68,11 @@ BOOL CSerialNotifierDlg::OnInitDialog()
 
     AfxBeginThread(SerialListChangingMonitor, &_serial);
 
-    _trace_cedit.SetLimitText(0xFFFFFFFF);
+    _trace_cedit.SetLimitText(MAXUINT);
 
     TRACE_OUTPUT(TEXT("Serial notifier start"));
 
-    return TRUE;  // return TRUE  unless you set the focus to a control
+    return FALSE;  // return TRUE  unless you set the focus to a control
 }
 
 // If you add a minimize button to your dialog, you will need the code below
@@ -251,7 +251,7 @@ VOID CSerialNotifierDlg::CreateMenu()
 
     typedef serial_notifier::lang::Lang Lang;
     const Lang::TranslationsList & translations_list = Lang::get_all_translations_list();
-    TRACE_OUTPUT(TEXT("%s [%u] translations ate available"), TEXT(__FUNCTION__), translations_list.size());
+    TRACE_OUTPUT(TEXT("%s [%u] translations are available"), TEXT(__FUNCTION__), translations_list.size());
     _languages_submenu.CreatePopupMenu();
     for(Lang::TranslationsList::const_iterator it = translations_list.begin(); it != translations_list.end(); it++)
     {
