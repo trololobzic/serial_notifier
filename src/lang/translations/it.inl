@@ -1,7 +1,4 @@
-﻿#include "stdafx.h"
-#include "lang.h"
-
-#define LANG Italian
+﻿#define LANGUAGE Italian
 
 namespace serial_notifier
 {
@@ -9,11 +6,10 @@ namespace lang
 {
 
 template<>
-    struct Translation<LANG, TranslationBase> : public TranslationBase
+    struct Translation<LANGUAGE, TranslationBase> : public TranslationBase
     {
         Translation() :
-            TranslationBase(CString(TEXT("Italiano")), LANG)
-
+            TranslationBase(CString(TEXT("Italiano")), LANGUAGE)
         {
             app_name = TEXT("Monitoraggio delle porte seriali");
 
@@ -35,7 +31,9 @@ template<>
         }
     };
 
-    const Translation<LANG, TranslationBase> english;
+    const Translation<LANGUAGE, TranslationBase> italian;
 }
 
 }
+
+#undef LANGUAGE

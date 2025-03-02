@@ -1,11 +1,9 @@
 ﻿# How to support one more translation
-Just add cpp-file with next content and fill strings:
+1. Just add inc file in `Translations` directory with next content and fill strings.
+2. Include your new inc file in the bottom of `lang.cpp`
 
 ```
-#include "stdafx.h"
-#include "lang.h"
-
-#define LANG <item of SupportedLanguagesEnum>
+#define LANGUAGE <item of SuppertedLanguegesEnum>
 
 namespace serial_notifier
 {
@@ -13,14 +11,12 @@ namespace lang
 {
 
 template<>
-    struct Translation<LANG, TranslationBase> : public TranslationBase
+    struct Translation<LANGUAGE, TranslationBase> : public TranslationBase
     {
         Translation() :
-            TranslationBase(LANG, true)
-
+            TranslationBase(CString(TEXT("")), LANGUAGE, true)
         {
             app_name = TEXT("");
-            lang_name = TEXT("");
 
             menu_items.languages = TEXT("");
             menu_items.devices = TEXT("");
@@ -35,12 +31,15 @@ template<>
             popup_messages.unplugged_plural = TEXT("");
 
             question_enable_sys_popup = TEXT("");
-            serial_info = TEXT("");
+            info_enable_sys_popup = TEXT("");
+            serial_info = TEXT(""); // "Port: %s\nFriendly name: %s\nDescription: %s"
         }
     };
 
-    const Translation<LANG, TranslationBase> english;
+    const Translation<LANGUAGE, TranslationBase> english;
 }
 
 }
+
+#undef LANGUAGE
 ```

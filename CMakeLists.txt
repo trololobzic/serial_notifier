@@ -24,8 +24,8 @@ if (NOT MFC_FOUND)
 endif()
 
 file(GLOB_RECURSE SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
-file(GLOB_RECURSE HEARDERS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h")
-file(GLOB_RECURSE RESOURSES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.rc" "src/*.rc2")
+file(GLOB_RECURSE HEARDERS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h" "${CMAKE_CURRENT_SOURCE_DIR}/*.inl")
+file(GLOB_RECURSE RESOURSES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.rc" "${CMAKE_CURRENT_SOURCE_DIR}/src/*.rc2")
 list(APPEND include_path "${CMAKE_CURRENT_SOURCE_DIR}/src"
                          "${CMAKE_CURRENT_SOURCE_DIR}/src/lang"
                          "${CMAKE_CURRENT_SOURCE_DIR}/src/registry")
@@ -59,6 +59,7 @@ file(GLOB_RECURSE TESTS_SRC "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp"
                             "${CMAKE_CURRENT_SOURCE_DIR}/src/lang/lang.cpp")
 create_directories_structure(tests "Tests")
 add_executable(${TESTS_PROJECT_NAME} EXCLUDE_FROM_ALL ${TESTS_SRC})
+target_compile_definitions(${TESTS_PROJECT_NAME} PRIVATE TESTS_PROJECT=1)
 set_include_path("${TESTS_PROJECT_NAME}" "${include_path}")
 add_dependencies(${PROJECT_NAME} ${TESTS_PROJECT_NAME})
 
