@@ -30,6 +30,7 @@ template<>
             popup_messages.unplugged_plural = TEXT("Unplugged");
 
             question_enable_sys_popup = TEXT("Popup messages are disable in this system. Enable?");
+            info_enable_sys_popup = TEXT("Pop-up messages are allowed");
             serial_info = TEXT("Port: %s\nFriendly name: %s\nDescription: %s");
         }
     };

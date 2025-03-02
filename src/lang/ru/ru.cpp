@@ -30,6 +30,7 @@ template<>
             popup_messages.unplugged_plural = TEXT("Отключены");
 
             question_enable_sys_popup = TEXT("Всплывающие сообщения отключены в системе. Включить?");
+            info_enable_sys_popup = TEXT("Всплывающие сообщения разрешены");
             serial_info = TEXT("Порт: %s\nНаименование: %s\nОписание: %s");
         }
     };

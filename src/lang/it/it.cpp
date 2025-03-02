@@ -30,6 +30,7 @@ template<>
             popup_messages.unplugged_plural = TEXT("Disabilitato");
 
             question_enable_sys_popup = TEXT("I messaggi pop-up sono disattivati ​​nel sistema. Accendere?");
+            info_enable_sys_popup = TEXT("Sono consentiti i messaggi pop-up");
             serial_info = TEXT("Porta: %s\nNome: %s\nDescrizione: %s");
         }
     };

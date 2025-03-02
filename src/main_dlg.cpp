@@ -158,6 +158,10 @@ BOOL CSerialNotifierDlg::CreateTrayIcon()
         return FALSE;
     }
 
+    // TODO: checkout why next code returns FALSE in Windows XP
+    // but return TRUE in Windows 10. Also the tray icon shows no tip and no balloon
+    // if next string is not commented
+
     //BOOL ret = Shell_NotifyIcon(NIM_SETVERSION, &_notify_icon_data);
     //TRACE_OUTPUT(TEXT("%s res [%u]"), TEXT(__FUNCTION__), ret);
     //return ret;
@@ -386,26 +390,19 @@ LRESULT CSerialNotifierDlg::OnChoiceMenuItemPopup(WPARAM wp, LPARAM lp)
 
     if (_menu.GetMenuState(WM_POPUP_POPUP_ENABLE, MF_BYCOMMAND) & MF_CHECKED)
     {
+        //menu item was checked, so in this case we uncheck it and set according setting to false
         _settings.popup(false);
-        _menu.CheckMenuItem(WM_POPUP_POPUP_ENABLE, MF_UNCHECKED );
     }
-    else
+    else if (_settings.system_popup())
     {
-        if (_settings.system_popup())
-        {
-            _settings.popup(true);
-            _menu.CheckMenuItem(WM_POPUP_POPUP_ENABLE, MF_CHECKED );
-        }
-        else
-        {
-            if (MessageBox(_translation_ptr->question_enable_sys_popup, _translation_ptr->app_name, MB_YESNO | MB_ICONQUESTION) == IDYES)
-
-            {
-                _settings.system_popup(true);
-                _settings.popup(true);
-                _menu.CheckMenuItem(WM_POPUP_POPUP_ENABLE, MF_CHECKED );
-            }
-        }
+        _settings.popup(true);
+        ShowTrayIconBalloon(_translation_ptr->app_name, _translation_ptr->info_enable_sys_popup, NIIF_USER);
+    }
+    else if (MessageBox(_translation_ptr->question_enable_sys_popup, _translation_ptr->app_name, MB_YESNO | MB_ICONQUESTION) == IDYES)
+    {
+        _settings.system_popup(true);
+        _settings.popup(true);
+        ShowTrayIconBalloon(_translation_ptr->app_name, _translation_ptr->info_enable_sys_popup, NIIF_USER);
     }
 
     return NULL;

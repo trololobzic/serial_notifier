@@ -30,6 +30,7 @@ template<>
             popup_messages.unplugged_plural = TEXT("Désactivé");
 
             question_enable_sys_popup = TEXT("Les messages contextuels sont désactivés dans le système. Allumer?");
+            info_enable_sys_popup = TEXT("Les messages contextuels sont autorisés");
             serial_info = TEXT("Port: %s\nFriendly nom %s\nDescription: %s");
         }
     };
