@@ -13,7 +13,7 @@ The application can automatically start when the system starts and monitor conne
 ## Multilanguage support
 The application supports multilanguage interface. On first start it try to autodetect system language and apply that but you can choose interface language manually.
 
-![serial_notifier2](https://github.com/user-attachments/assets/d18c5b21-fc44-4a8b-82cc-18a9dc975244)
+![serial_notifier3](https://github.com/user-attachments/assets/c2ac86a6-520c-4ab1-b6c1-18cf25917196)
 
 ## Backward compatibility
 The application does not use modern C++ standards such as C++11 and above, because the developer's goal was to maintain backward compatibility with legacy operating systems such as Windows XP and Windows 7. These systems are currently not supported, but are still used in industrial computers to this day.
