@@ -44,10 +44,10 @@ jobs:
     runs-on: windows-2022
     steps:
     
-      - name: Download tests binary
-        uses: actions/download-artifact@v4
-        with:
-          name: tests
+     # - name: Download tests binary
+     #   uses: actions/download-artifact@v4
+     #   with:
+     #     name: tests
           
       - name: Run tests
-        run: ctest serial_notifier_tests.exe -C ${{env.BUILD_TYPE}}
+        run: ctest -C ${{env.BUILD_TYPE}}
