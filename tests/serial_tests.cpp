@@ -31,7 +31,7 @@ struct TestRegistrySerialList1
 * Test cases
 */
 
-TEST_CASE("Checking SerialDevice compare operators", "[serial]")
+TEST_CASE("Checking_SerialDevice_compare_operators", "[serial]")
 {
     serial_notifier::SerialDevice device1(TEXT("COM1")), device2(TEXT("COM1"));
 
@@ -47,7 +47,7 @@ TEST_CASE("Checking SerialDevice compare operators", "[serial]")
     REQUIRE(device1 < device2);
 }
 
-TEST_CASE("Checking SerialDevice _get_device_idx()", "[serial]")
+TEST_CASE("Checking_SerialDevice__get_device_idx", "[serial]")
 {
     std::vector<serial_notifier::SerialDevice> vec;
     vec.resize(7);
@@ -70,7 +70,7 @@ TEST_CASE("Checking SerialDevice _get_device_idx()", "[serial]")
     REQUIRE(::lstrcmp(vec.at(6).device_name, TEXT("COM12")) == 0);
 }
 
-TEST_CASE("Checking read_serial_list()", "[serial]")
+TEST_CASE("Checking_read_serial_list", "[serial]")
 {
     serial_notifier::Serial<TestRegistrySerialList1> serial;
     serial_notifier::Serial<TestRegistrySerialList1>::SerialList serial_list = serial.get_list();
@@ -96,7 +96,7 @@ TEST_CASE("Checking read_serial_list()", "[serial]")
 //disable this test case due it machine depends and also
 //language settings depends
 //
-//TEST_CASE("Checking setup_descriptions()", "[serial]")
+//TEST_CASE("Checking_setup_descriptions", "[serial]")
 //{
 //    typedef serial_notifier::Serial<TestRegistrySerialList1> Serial;
 
@@ -110,7 +110,7 @@ TEST_CASE("Checking read_serial_list()", "[serial]")
 //    CHECK(serial_list.at(0).description.GetLength());
 //}
 
-TEST_CASE("Checking get_difference() - plugging devices", "[serial]")
+TEST_CASE("Checking_get_difference_plugging_devices", "[serial]")
 {
     typedef serial_notifier::Serial<TestRegistrySerialList1> Serial;
 
@@ -134,7 +134,7 @@ TEST_CASE("Checking get_difference() - plugging devices", "[serial]")
     REQUIRE(diff.plugged_devices[0].device_name == CString(TEXT("COM20")));
 }
 
-TEST_CASE("Checking get_difference() - removing devices", "[serial]")
+TEST_CASE("Checking_get_difference_removing_devices", "[serial]")
 {
     typedef serial_notifier::Serial<TestRegistrySerialList1> Serial;
 
@@ -158,7 +158,7 @@ TEST_CASE("Checking get_difference() - removing devices", "[serial]")
     REQUIRE(diff.unplugged_devices[0].device_name == CString(TEXT("COM20")));
 }
 
-TEST_CASE("Checking get_difference() - both plugging and unplugging devices", "[serial]")
+TEST_CASE("Checking_get_difference_both_plugging_and_unplugging_devices", "[serial]")
 {
     typedef serial_notifier::Serial<TestRegistrySerialList1> Serial;
 

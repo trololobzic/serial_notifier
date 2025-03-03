@@ -242,7 +242,7 @@ static CString make_app_path()
 * Test cases
 */
 
-TEST_CASE("Testing settings for all flags are true", "[settings]")
+TEST_CASE("Testing_settings_for_all_flags_are_true", "[settings]")
 {
     serial_notifier::Settings<TestRegistry1> settings;
 
@@ -262,7 +262,7 @@ TEST_CASE("Testing settings for all flags are true", "[settings]")
     REQUIRE(TestRegistry1::flag4);
 }
 
-TEST_CASE("Testing settings for all flags are false", "[settings]")
+TEST_CASE("Testing_settings_for_all_flags_are_false", "[settings]")
 {
     serial_notifier::Settings<TestRegistry2> settings;
 
@@ -279,10 +279,10 @@ TEST_CASE("Testing settings for all flags are false", "[settings]")
     REQUIRE(TestRegistry2::flag1);
     REQUIRE(TestRegistry2::flag2);
     REQUIRE(TestRegistry2::flag3);
-    REQUIRE(TestRegistry1::flag4);
+    REQUIRE(TestRegistry2::flag4);
 }
 
-TEST_CASE("Testing settings force popup setting up", "[settings]")
+TEST_CASE("Testing_settings_force_popup_setting_up", "[settings]")
 {
     serial_notifier::Settings<TestRegistry3> settings(true);
 

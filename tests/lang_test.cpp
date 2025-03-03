@@ -4,7 +4,7 @@
 #define CATCH_CONFIG_NO_CPP11
 #include "catch.hpp"
 
-TEST_CASE("Checking TranslationBase comparing", "[lang]")
+TEST_CASE("Checking_TranslationBase_comparing", "[lang]")
 {
     {
         serial_notifier::lang::TranslationBase a(CString(TEXT("abracadabra")), serial_notifier::lang::Swedish);
@@ -25,7 +25,7 @@ TEST_CASE("Checking TranslationBase comparing", "[lang]")
     }
 }
 
-TEST_CASE("Checking Lang 1", "[lang]")
+TEST_CASE("Checking_Lang_1", "[lang]")
 {    
     {
         serial_notifier::lang::TranslationBase a(CString(TEXT("")), serial_notifier::lang::Galician);
@@ -37,7 +37,7 @@ TEST_CASE("Checking Lang 1", "[lang]")
     REQUIRE_THROWS(serial_notifier::lang::Lang::get_translation(serial_notifier::lang::Galician));
 }
 
-TEST_CASE("Checking Lang 2", "[lang]")
+TEST_CASE("Checking_Lang_2", "[lang]")
 {
     REQUIRE(serial_notifier::lang::Lang::get_all_translations_list().empty());
     serial_notifier::lang::TranslationBase a(CString(TEXT("C")), serial_notifier::lang::Danish),
@@ -55,7 +55,7 @@ TEST_CASE("Checking Lang 2", "[lang]")
     REQUIRE(list[4] == &e);
 }
 
-TEST_CASE("Checking Lang 3", "[lang]")
+TEST_CASE("Checking_Lang_3", "[lang]")
 {
     serial_notifier::lang::TranslationBase a(CString(TEXT("")), serial_notifier::lang::Swedish);
     serial_notifier::lang::TranslationBase b(CString(TEXT("")), serial_notifier::lang::Turkish, true);
