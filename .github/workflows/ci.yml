@@ -54,4 +54,4 @@ jobs:
           name: tests
           
       - name: Run tests
-        run: ${{GITHUB_WORKSPACE}}/serial_notifier_tests.exe
+        run: ${{github.workspace}}/serial_notifier_tests.exe
