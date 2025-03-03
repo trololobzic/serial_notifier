@@ -1,4 +1,4 @@
-name: Build and test
+name: ci
 
 on:
   push:
@@ -8,16 +8,17 @@ on:
 
 env:
   BUILD_TYPE: Release
+  PLATFORM: windows-2022 #possible variants: windows-2019, windows-2022, windows-2025(windows-latest)
 
 jobs:
   build:
-    name: Build project
-    runs-on: windows-2022 #possible variants: windows-2019, windows-2022, windows-2025(windows-latest)
+    name: Build
+    runs-on: ${{env.PLATFORM}} #possible variants: windows-2019, windows-2022, windows-2025(windows-latest)
     steps:
     - uses: actions/checkout@v4
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -A Win32 -DSKIP_TESTS=ON
+      run: cmake -B ${{github.workspace}}/build -A Win32
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
@@ -38,9 +39,9 @@ jobs:
         path: ${{github.workspace}}/build/${{env.BUILD_TYPE}}/serial_notifier_tests.exe
         
   test:
-    name: Run tests
+    name: Test
     needs: build
-    runs-on: windows-2022 #possible variants: windows-2019, windows-2022, windows-2025(windows-latest)
+    runs-on: ${{env.PLATFORM}}
     steps:
     
       - name: Download tests binary
@@ -49,4 +50,4 @@ jobs:
           name: tests
           
       - name: Run tests
-        run: ctest serial_notifier_tests.exe -c ${{env.BUILD_TYPE}}
+        run: ctest serial_notifier_tests.exe -C ${{env.BUILD_TYPE}}
