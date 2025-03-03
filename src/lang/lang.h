@@ -71,6 +71,8 @@ namespace lang
         PopupMessages popup_messages;
 
         CString question_enable_sys_popup;
+        CString info_enable_sys_popup;
+
         CString serial_info;
 
         bool operator==(const TranslationBase & other) const

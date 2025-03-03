@@ -1,7 +1,7 @@
 ﻿#include "stdafx.h"
 #include "lang.h"
 
-#define LANG French_France
+#define LANGUAGE French_France
 
 namespace serial_notifier
 {
@@ -9,11 +9,10 @@ namespace lang
 {
 
 template<>
-    struct Translation<LANG, TranslationBase> : public TranslationBase
+    struct Translation<LANGUAGE, TranslationBase> : public TranslationBase
     {
         Translation() :
-            TranslationBase(CString(TEXT("Français")), LANG, true)
-
+            TranslationBase(CString(TEXT("Français")), LANGUAGE, true)
         {
             app_name = TEXT("Surveillance des ports série");
 
@@ -30,11 +29,14 @@ template<>
             popup_messages.unplugged_plural = TEXT("Désactivé");
 
             question_enable_sys_popup = TEXT("Les messages contextuels sont désactivés dans le système. Allumer?");
+            info_enable_sys_popup = TEXT("Les messages contextuels sont autorisés");
             serial_info = TEXT("Port: %s\nFriendly nom %s\nDescription: %s");
         }
     };
 
-    const Translation<LANG, TranslationBase> english;
+    const Translation<LANGUAGE, TranslationBase> french;
 }
 
 }
+
+#undef LANGUAGE

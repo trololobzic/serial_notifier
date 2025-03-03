@@ -1,7 +1,4 @@
-﻿#include "stdafx.h"
-#include "lang.h"
-
-#define LANG Russian
+﻿#define LANGUAGE Russian
 
 namespace serial_notifier
 {
@@ -9,11 +6,10 @@ namespace lang
 {
 
 template<>
-    struct Translation<LANG, TranslationBase> : public TranslationBase
+    struct Translation<LANGUAGE, TranslationBase> : public TranslationBase
     {
         Translation() :
-            TranslationBase(CString(TEXT("Русский")), LANG)
-
+            TranslationBase(CString(TEXT("Русский")), LANGUAGE)
         {
             app_name = TEXT("Менеджер уведомлений COM-портов");
 
@@ -30,11 +26,14 @@ template<>
             popup_messages.unplugged_plural = TEXT("Отключены");
 
             question_enable_sys_popup = TEXT("Всплывающие сообщения отключены в системе. Включить?");
+            info_enable_sys_popup = TEXT("Всплывающие сообщения разрешены");
             serial_info = TEXT("Порт: %s\nНаименование: %s\nОписание: %s");
         }
     };
 
-    const Translation<LANG, TranslationBase> russian;
+    const Translation<LANGUAGE, TranslationBase> russian;
 }
 
 }
+
+#undef LANGUAGE

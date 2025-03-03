@@ -86,3 +86,12 @@ namespace lang
 
 }
 }
+
+#ifndef TESTS_PROJECT
+#include "de.inl"
+#include "en.inl"
+#include "es.inl"
+#include "fr.inl"
+#include "it.inl"
+#include "ru.inl"
+#endif

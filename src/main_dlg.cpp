@@ -7,6 +7,12 @@
 #define new DEBUG_NEW
 #endif
 
+#ifdef DEBUG
+  #define TRACE_OUTPUT trace_output
+#else
+  #define TRACE_OUTPUT(...) ((void)0) //strip out PRINT instructions from code
+#endif
+
 CSerialNotifierDlg::CSerialNotifierDlg(Settings & settings, Serial & serial, CWnd* pParent):
     _settings(settings),
     _serial(serial),
@@ -22,6 +28,7 @@ CSerialNotifierDlg::~CSerialNotifierDlg()
 void CSerialNotifierDlg::DoDataExchange(CDataExchange* pDX)
 {
     CDialog::DoDataExchange(pDX);
+    DDX_Control(pDX, IDC_TRACE_OUTPUT, _trace_cedit);
 }
 
 BEGIN_MESSAGE_MAP(CSerialNotifierDlg, CDialog)
@@ -60,7 +67,12 @@ BOOL CSerialNotifierDlg::OnInitDialog()
     SetTrayIconTipText(_translation_ptr->app_name);
 
     AfxBeginThread(SerialListChangingMonitor, &_serial);
-    return TRUE;  // return TRUE  unless you set the focus to a control
+
+    _trace_cedit.SetLimitText(MAXUINT);
+
+    TRACE_OUTPUT(TEXT("Serial notifier start"));
+
+    return FALSE;  // return TRUE  unless you set the focus to a control
 }
 
 // If you add a minimize button to your dialog, you will need the code below
@@ -69,7 +81,10 @@ BOOL CSerialNotifierDlg::OnInitDialog()
 
 void CSerialNotifierDlg::OnPaint()
 {
+    #ifndef DEBUG
     ShowWindow(SW_HIDE);
+    #endif
+
     if (IsIconic())
     {
         CPaintDC dc(this); // device context for painting
@@ -107,6 +122,7 @@ void CSerialNotifierDlg::OnDestroy()
 
 BOOL CSerialNotifierDlg::CreateTrayIcon()
 {
+    TRACE_OUTPUT(TEXT("%s start"), TEXT(__FUNCTION__));
     ::memset(&_notify_icon_data, 0 , sizeof(_notify_icon_data));
     _notify_icon_data.cbSize = NOTIFYICONDATA_V3_SIZE;
 
@@ -129,14 +145,27 @@ BOOL CSerialNotifierDlg::CreateTrayIcon()
     _notify_icon_data.uTimeout = 1000u;
 
     if(!_notify_icon_data.hIcon)
+    {
+        TRACE_OUTPUT(TEXT("%s can not set notify icon data"), TEXT(__FUNCTION__));
         return FALSE;
+    }
 
     _notify_icon_data.uVersion = NOTIFYICON_VERSION_4;
 
     if(!Shell_NotifyIcon(NIM_ADD, &_notify_icon_data))
+    {
+        TRACE_OUTPUT(TEXT("%s can not run NIM_ADD"), TEXT(__FUNCTION__));
         return FALSE;
+    }
 
-    return Shell_NotifyIcon(NIM_SETVERSION, &_notify_icon_data);
+    // TODO: checkout why next code returns FALSE in Windows XP
+    // but return TRUE in Windows 10. Also the tray icon shows no tip and no balloon
+    // if next string is not commented
+
+    //BOOL ret = Shell_NotifyIcon(NIM_SETVERSION, &_notify_icon_data);
+    //TRACE_OUTPUT(TEXT("%s res [%u]"), TEXT(__FUNCTION__), ret);
+    //return ret;
+    return TRUE;
 }
 
 BOOL CSerialNotifierDlg::DestroyTrayIcon()
@@ -147,11 +176,16 @@ BOOL CSerialNotifierDlg::DestroyTrayIcon()
 BOOL CSerialNotifierDlg::SetTrayIconTipText(const CString & text)
 {
     if(StringCchCopy(_notify_icon_data.szTip, sizeof(_notify_icon_data.szTip), text) != S_OK)
+    {
+        TRACE_OUTPUT(TEXT("%s StringCchCopy return FALSE"), TEXT(__FUNCTION__));
         return FALSE;
+    }
 
     _notify_icon_data.uFlags &= ~NIF_INFO;
     _notify_icon_data.uFlags |= NIF_TIP;
-    return Shell_NotifyIcon(NIM_MODIFY, &_notify_icon_data);
+    BOOL ret =  Shell_NotifyIcon(NIM_MODIFY, &_notify_icon_data);
+    TRACE_OUTPUT(TEXT("%s res [%u]"), TEXT(__FUNCTION__), ret);
+    return ret;
 }
 
 /*
@@ -163,18 +197,29 @@ BOOL CSerialNotifierDlg::SetTrayIconTipText(const CString & text)
 BOOL CSerialNotifierDlg::ShowTrayIconBalloon(const CString & title, const CString & text, const DWORD flags)
 {
     if (!_settings.popup())
+    {
+        TRACE_OUTPUT(TEXT("%s popup disabled"), TEXT(__FUNCTION__));
         return FALSE;
+    }
 
     _notify_icon_data.uFlags |= NIF_INFO;
     _notify_icon_data.dwInfoFlags = flags;
 
     if(::StringCchCopy(_notify_icon_data.szInfoTitle, sizeof(_notify_icon_data.szInfoTitle), title) != S_OK)
+    {
+        TRACE_OUTPUT(TEXT("%s StringCchCopy return FALSE"), TEXT(__FUNCTION__));
         return FALSE;
+    }
 
     if(::StringCchCopy(_notify_icon_data.szInfo, sizeof(_notify_icon_data.szInfo), text) != S_OK)
+    {
+        TRACE_OUTPUT(TEXT("%s StringCchCopy return FALSE"), TEXT(__FUNCTION__));
         return FALSE;
+    }
 
-    return Shell_NotifyIcon(NIM_MODIFY, &_notify_icon_data);
+    BOOL ret = Shell_NotifyIcon(NIM_MODIFY, &_notify_icon_data);
+    TRACE_OUTPUT(TEXT("%s res [%u]"), TEXT(__FUNCTION__), ret);
+    return ret;
 }
 
 BOOL CSerialNotifierDlg::SetTrayIcon(HICON hIcon)
@@ -210,9 +255,11 @@ VOID CSerialNotifierDlg::CreateMenu()
 
     typedef serial_notifier::lang::Lang Lang;
     const Lang::TranslationsList & translations_list = Lang::get_all_translations_list();
+    TRACE_OUTPUT(TEXT("%s [%u] translations are available"), TEXT(__FUNCTION__), translations_list.size());
     _languages_submenu.CreatePopupMenu();
     for(Lang::TranslationsList::const_iterator it = translations_list.begin(); it != translations_list.end(); it++)
     {
+        TRACE_OUTPUT(TEXT("%s append translation [%s]"), TEXT(__FUNCTION__), (*it)->lang_name.GetString());
         CString next_item_string = (*it)->lang_name;
         size_t idx = std::distance(translations_list.begin(), it);
         _languages_submenu.AppendMenu(MF_STRING , WM_POPUP_LANGS_LIST + idx, next_item_string);
@@ -265,17 +312,21 @@ LRESULT CSerialNotifierDlg::OnTrayIconEvent(WPARAM wp, LPARAM lp)
 {
     (void)wp;
 
-    if (lp != WM_LBUTTONDOWN && lp != WM_RBUTTONDOWN)
+    UINT16 event_idx = static_cast<UINT16>(lp);
+    if (event_idx != WM_LBUTTONDOWN && event_idx != WM_RBUTTONDOWN)
         return NULL;
 
     POINT cp;
     GetCursorPos(&cp);
+
+    TRACE_OUTPUT(TEXT("%s show popup menu at [%lu,%lu]"), TEXT(__FUNCTION__), cp.x, cp.y);
 
     CreateMenu();
     CreateDevicesSubMenu();
     SetForegroundWindow();
 
     INT32 menu_choice = _menu.TrackPopupMenu(TPM_RIGHTALIGN |TPM_RETURNCMD, cp.x, cp.y, this);
+    TRACE_OUTPUT(TEXT("%s menu choice is [%d]"), TEXT(__FUNCTION__), menu_choice);
     if (menu_choice == WM_POPUP_AUTORUN)
     {
         SendMessage(WM_POPUP_AUTORUN, NULL, NULL); //handle message immediately
@@ -339,26 +390,19 @@ LRESULT CSerialNotifierDlg::OnChoiceMenuItemPopup(WPARAM wp, LPARAM lp)
 
     if (_menu.GetMenuState(WM_POPUP_POPUP_ENABLE, MF_BYCOMMAND) & MF_CHECKED)
     {
+        //menu item was checked, so in this case we uncheck it and set according setting to false
         _settings.popup(false);
-        _menu.CheckMenuItem(WM_POPUP_POPUP_ENABLE, MF_UNCHECKED );
     }
-    else
+    else if (_settings.system_popup())
     {
-        if (_settings.system_popup())
-        {
-            _settings.popup(true);
-            _menu.CheckMenuItem(WM_POPUP_POPUP_ENABLE, MF_CHECKED );
-        }
-        else
-        {
-            if (MessageBox(_translation_ptr->question_enable_sys_popup, _translation_ptr->app_name, MB_YESNO | MB_ICONQUESTION) == IDYES)
-
-            {
-                _settings.system_popup(true);
-                _settings.popup(true);
-                _menu.CheckMenuItem(WM_POPUP_POPUP_ENABLE, MF_CHECKED );
-            }
-        }
+        _settings.popup(true);
+        ShowTrayIconBalloon(_translation_ptr->app_name, _translation_ptr->info_enable_sys_popup, NIIF_USER);
+    }
+    else if (MessageBox(_translation_ptr->question_enable_sys_popup, _translation_ptr->app_name, MB_YESNO | MB_ICONQUESTION) == IDYES)
+    {
+        _settings.system_popup(true);
+        _settings.popup(true);
+        ShowTrayIconBalloon(_translation_ptr->app_name, _translation_ptr->info_enable_sys_popup, NIIF_USER);
     }
 
     return NULL;
@@ -452,3 +496,23 @@ CString CSerialNotifierDlg::MakeBalloonMessage(const Serial::SerialList & serial
     }
     return message;
 }
+
+#ifdef DEBUG
+void CSerialNotifierDlg::trace_output(LPCTSTR format_str, ...)
+{
+    int length = _trace_cedit.GetWindowTextLength() * sizeof(TCHAR);
+    CString msg, full_msg;
+    va_list argList;
+    va_start(argList, format_str);
+    msg.FormatV(format_str, argList);
+    va_end(argList);
+
+    time_t curr_time = std::time(NULL);
+    std::tm ptm;
+    ::localtime_s(&ptm, &curr_time);
+    full_msg.Format(TEXT("[%04d.%02d.%02d %02d:%02d:%02d] %s\r\n"), ptm.tm_year + 1900, ptm.tm_mon + 1, ptm.tm_mday, ptm.tm_hour, ptm.tm_min, ptm.tm_sec, msg.GetString());
+    //_trace_cedit.SetFocus();
+    _trace_cedit.SetSel(length, length);
+    _trace_cedit.ReplaceSel(full_msg.GetString());
+}
+#endif

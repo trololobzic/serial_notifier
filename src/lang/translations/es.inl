@@ -1,7 +1,4 @@
-﻿#include "stdafx.h"
-#include "lang.h"
-
-#define LANG Spanish_Spain
+﻿#define LANGUAGE Spanish_Spain
 
 namespace serial_notifier
 {
@@ -9,11 +6,10 @@ namespace lang
 {
 
 template<>
-    struct Translation<LANG, TranslationBase> : public TranslationBase
+    struct Translation<LANGUAGE, TranslationBase> : public TranslationBase
     {
         Translation() :
-            TranslationBase(CString(TEXT("Español")), LANG)
-
+            TranslationBase(CString(TEXT("Español")), LANGUAGE)
         {
             app_name = TEXT("Monitoreo de puertos seriales");
 
@@ -30,11 +26,14 @@ template<>
             popup_messages.unplugged_plural = TEXT("Desactivado");
 
             question_enable_sys_popup = TEXT("Los mensajes emergentes están deshabilitados en el sistema. ¿Encender?");
+            info_enable_sys_popup = TEXT("Se permiten mensajes emergentes"); 
             serial_info = TEXT("Puerto: %s\nNombre: %s\nDescripción: %s");
         }
     };
 
-    const Translation<LANG, TranslationBase> english;
+    const Translation<LANGUAGE, TranslationBase> spain;
 }
 
 }
+
+#undef LANGUAGE

@@ -1,7 +1,4 @@
-﻿#include "stdafx.h"
-#include "lang.h"
-
-#define LANG German
+﻿#define LANGUAGE German
 
 namespace serial_notifier
 {
@@ -9,11 +6,10 @@ namespace lang
 {
 
 template<>
-    struct Translation<LANG, TranslationBase> : public TranslationBase
+    struct Translation<LANGUAGE, TranslationBase> : public TranslationBase
     {
         Translation() :
-            TranslationBase(CString(TEXT("Deutsch")), LANG)
-
+            TranslationBase(CString(TEXT("Deutsch")), LANGUAGE)
         {
             app_name = TEXT("Überwachung serieller Schnittstellen");
  
@@ -30,11 +26,14 @@ template<>
             popup_messages.unplugged_plural = TEXT("Deaktiviert");
 
             question_enable_sys_popup = TEXT("Popup-Nachrichten sind im System deaktiviert. Anmachen?");
+            info_enable_sys_popup = TEXT("Popup-Nachrichten sind erlaubt");            
             serial_info = TEXT("Hafen: %s\nName: %s\nBeschreibung: %s");
         }
     };
 
-    const Translation<LANG, TranslationBase> english;
+    const Translation<LANGUAGE, TranslationBase> german;
 }
 
 }
+
+#undef LANGUAGE
