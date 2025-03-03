@@ -279,7 +279,7 @@ TEST_CASE("Testing settings for all flags are false", "[settings]")
     REQUIRE(TestRegistry2::flag1);
     REQUIRE(TestRegistry2::flag2);
     REQUIRE(TestRegistry2::flag3);
-    REQUIRE(TestRegistry1::flag4);
+    REQUIRE(TestRegistry2::flag4);
 }
 
 TEST_CASE("Testing settings force popup setting up", "[settings]")

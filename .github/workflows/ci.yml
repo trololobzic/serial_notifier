@@ -11,13 +11,10 @@ env:
 
 jobs:
   build:
+    name: Build project
     runs-on: windows-2022 #possible variants: windows-2019, windows-2022, windows-2025(windows-latest)
-
     steps:
     - uses: actions/checkout@v4
-
-    #- name: Add MSBuild to PATH
-    #  uses: microsoft/setup-msbuild@v2
 
     - name: Configure CMake
       run: cmake -B ${{github.workspace}}/build -A Win32 -DSKIP_TESTS=ON
@@ -28,8 +25,28 @@ jobs:
     - name: Test
       run: ${{github.workspace}}/build/${{env.BUILD_TYPE}}/serial_notifier_tests.exe
 
-    - name: Archive production artifact
+    - name: Archive binary
       uses: actions/upload-artifact@v4
       with:
-        name: serial_notifier.exe
+        name: binary
         path: ${{github.workspace}}/build/${{env.BUILD_TYPE}}/serial_notifier.exe
+        
+    - name: Archive tests
+      uses: actions/upload-artifact@v4
+      with:
+        name: tests
+        path: ${{github.workspace}}/build/${{env.BUILD_TYPE}}/serial_notifier_tests.exe
+        
+  test:
+    name: Run tests
+    needs: build
+    runs-on: windows-2022 #possible variants: windows-2019, windows-2022, windows-2025(windows-latest)
+    steps:
+    
+      - name: Download tests binary
+        uses: actions/download-artifact@v4
+        with:
+          name: tests
+          
+      - name: Run tests
+        run: ctest serial_notifier_tests.exe -c ${{env.BUILD_TYPE}}
