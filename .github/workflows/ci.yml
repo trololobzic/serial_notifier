@@ -13,7 +13,7 @@ env:
 jobs:
   build:
     name: Build
-    runs-on: ${{env.PLATFORM}} #possible variants: windows-2019, windows-2022, windows-2025(windows-latest)
+    runs-on: windows-2022 
     steps:
     - uses: actions/checkout@v4
 
@@ -23,8 +23,8 @@ jobs:
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
-    - name: Test
-      run: ${{github.workspace}}/build/${{env.BUILD_TYPE}}/serial_notifier_tests.exe
+    #- name: Test
+    #  run: ${{github.workspace}}/build/${{env.BUILD_TYPE}}/serial_notifier_tests.exe
 
     - name: Archive binary
       uses: actions/upload-artifact@v4
@@ -41,7 +41,7 @@ jobs:
   test:
     name: Test
     needs: build
-    runs-on: ${{env.PLATFORM}}
+    runs-on: windows-2022
     steps:
     
       - name: Download tests binary
