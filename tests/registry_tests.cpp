@@ -38,7 +38,7 @@ UINT win_thread_foo(LPVOID param)
 * Test cases
 */
 
-TEST_CASE("Checking registry value", "[registry]")
+TEST_CASE("Checking_registry_value", "[registry]")
 {
     {
         serial_notifier::RegistryValue reg_value;
@@ -152,7 +152,7 @@ TEST_CASE("Checking registry value", "[registry]")
     }
 }
 
-TEST_CASE("Checking path validation", "[registry]")
+TEST_CASE("Checking_path_validation", "[registry]")
 {
     REQUIRE_FALSE(serial_notifier::Registry::is_path_valid(HKEY_CURRENT_USER, TEXT("abracadabra_123")));
     REQUIRE_FALSE(serial_notifier::Registry::is_path_valid(HKEY_CURRENT_USER, TEXT("abracadabra_456")));
@@ -160,7 +160,7 @@ TEST_CASE("Checking path validation", "[registry]")
     REQUIRE(serial_notifier::Registry::is_path_valid(HKEY_LOCAL_MACHINE, TEXT("HARDWARE\\DEVICEMAP")));
 }
 
-TEST_CASE("Checking validation/read/write/delete from reg", "[registry]")
+TEST_CASE("Checking_validation/read/write/delete_from_reg", "[registry]")
 {
     CString reg_test_path = make_test_reg_path();
 
@@ -201,7 +201,7 @@ TEST_CASE("Checking validation/read/write/delete from reg", "[registry]")
     REQUIRE_FALSE(serial_notifier::Registry::is_key_present(HKEY_CURRENT_USER, reg_test_path + CString(TEXT("\\sub_key_12\\sub_key_abracadabra")), TEXT("test_key_1")));
 }
 
-TEST_CASE("Check blocking_wait_for_changing() for adding key", "[registry]")
+TEST_CASE("Check_blocking_wait_for_changing_for_adding_key", "[registry]")
 {
     CString reg_test_path = make_test_reg_path();
 
@@ -231,7 +231,7 @@ TEST_CASE("Check blocking_wait_for_changing() for adding key", "[registry]")
     REQUIRE_FALSE(serial_notifier::Registry::is_path_valid(HKEY_LOCAL_MACHINE, reg_test_path));
 }
 
-TEST_CASE("Check blocking_wait_for_changing() for removing key", "[registry]")
+TEST_CASE("Check_blocking_wait_for_changing_for_removing_key", "[registry]")
 {
     CString reg_test_path = make_test_reg_path();
     serial_notifier::RegistryValue reg_value1(UINT32(123));
