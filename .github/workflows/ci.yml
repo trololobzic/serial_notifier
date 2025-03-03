@@ -45,4 +45,4 @@ jobs:
           name: tests
           
       - name: Run tests
-        run: ${{github.workspace}}/serial_notifier_tests.exe -d yes -s
+        run: ${{github.workspace}}/serial_notifier_tests.exe -d yes
