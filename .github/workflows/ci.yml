@@ -22,9 +22,6 @@ jobs:
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
-#    - name: Test
-#      run: ctest --test-dir ${{github.workspace}}/build --build-config ${{env.BUILD_TYPE}}
-
     - name: Archive binary
       uses: actions/upload-artifact@v4
       with:
@@ -36,17 +33,11 @@ jobs:
       with:
         name: tests
         path: ${{github.workspace}}/build/${{env.BUILD_TYPE}}/serial_notifier_tests.exe
-
-#    - name: Archive tests results
-#      uses: actions/upload-artifact@v4
-#      with:
-#        name: test_results
-#        path: ${{github.workspace}}/build/testing
         
   test:
     name: Test
     needs: build
-    runs-on: windows-2022
+    runs-on: windows-latest
     steps:    
       - name: Download tests binary
         uses: actions/download-artifact@v4
@@ -54,4 +45,4 @@ jobs:
           name: tests
           
       - name: Run tests
-        run: ${{github.workspace}}/serial_notifier_tests.exe
+        run: ${{github.workspace}}/serial_notifier_tests.exe -d yes -s
